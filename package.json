@@ -1,0 +1,22 @@
+{
+  "name": "wm-robo-ops-server",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wm-robo-ops/server.git"
+  },
+  "author": "Kelvin Abrokwa",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wm-robo-ops/server/issues"
+  },
+  "homepage": "https://github.com/wm-robo-ops/server#readme",
+  "dependencies": {
+    "express": "^4.13.4"
+  }
+}
