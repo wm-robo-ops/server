@@ -4,6 +4,8 @@
   },
   "rules": {
     "strict": [0],
-    "quotes": [2, "single"]
+    "quotes": [2, "single"],
+    "curly": [0],
+    no-use-before-define: [0]
   }
 }

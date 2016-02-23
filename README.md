@@ -4,16 +4,30 @@ Backend that powers the [dashboard](http://wm-robo-ops.github.io/dashboard/). Bu
 
 ## API Endpoints
 
-####`/:vehicle/stats`
+####`/stats`
 
 Reponse
 
 ```js
 {
-    battery: <Number>, // battery percentage remaining
-    network: <Number>, // network strength
-    location: Array<Number>, // [lon, lat]
-    bearing: <Number>, // in degrees counterclockwise from north
+    "bigDaddy": {
+        "battery": <Number>, // battery percentage remaining
+        "network": <Number>, // network strength
+        "location": Array<Number>, // [lon, lat]
+        "bearing": <Number> // in degrees counterclockwise from north
+    },
+    "scout": {
+        "battery": <Number>,
+        "network": <Number>,
+        "location": Array<Number>,
+        "bearing": <Number>
+    },
+    "flyer": {
+        "battery": <Number>,
+        "network": <Number>,
+        "location": Array<Number>,
+        "bearing": <Number>
+    }
 }
 ```
 
