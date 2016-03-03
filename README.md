@@ -2,6 +2,11 @@
 
 Backend that powers the [dashboard](http://wm-robo-ops.github.io/dashboard/). Built with [Express.js](http://expressjs.com/) and [Socket.io](http://socket.io/)
 
+## Dependencies
+
+- ffmpeg (on rover pi)
+- Node.js
+
 ## API Endpoints
 
 ####`/stats`
@@ -31,6 +36,50 @@ Reponse
 }
 ```
 
+####`/rocks`
+
+Response: An array of rock data
+
+```
+[
+	{
+		"lon": <Number>,
+		"lat": <Number>,
+		"color": <String>,
+		"id": <String>
+	}
+]
+```
+
+####`/rocks/add`
+
+Request body:
+
+```js
+{
+	"lon": <Number>,
+	"lat": <Number>,
+	"color": <String>,
+	"id": <String>
+}
+```
+
+Response
+
+```
+ok
+```
+
+####`/rocks/remove/:id`
+
+Remove a rock by its id
+
+Response
+
+```
+ok
+```
+
 ####`/:vehicle/video/:camera`
 
 Response
@@ -42,8 +91,27 @@ some video streaming socket
 
 ## Running Locally
 
+#### Installation
 ```
-git cloen https://github.com/wm-robo-ops/server.git && cd server
+git clone https://github.com/wm-robo-ops/server.git && cd server
 npm install
+```
+
+#### Start stats/socks API
+```
 npm start
+```
+
+#### Start video server
+
+```
+./video_server.js
+```
+
+## On the rover
+
+Run
+
+```
+./start_video_stream.sh
 ```

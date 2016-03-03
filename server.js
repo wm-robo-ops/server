@@ -8,7 +8,6 @@ var app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-
 var DB = new Db();
 
 var random = utils.random;
