@@ -1,10 +1,13 @@
 var express = require('express');
 var cors = require('cors');
+var bodyParser = require('body-parser');
 var utils = require('./utils');
 var Db = require('./db');
 
 var app = express();
 app.use(cors());
+app.use(bodyParser.json());
+
 
 var DB = new Db();
 
@@ -17,9 +20,7 @@ var vehicles = [BIG_DADDY, SCOUT, FLYER];
 
 var center = [-95.081320, 29.564835];
 
-var count = 1;
 app.get('/stats', function(req, res) {
-  console.log(++count);
   res.send(vehicles.reduce(function(p, c) {
     p[c] = {
       batteryLevel: random(0, 100, true),
@@ -35,8 +36,19 @@ app.get('/stats', function(req, res) {
   }, {}));
 });
 
+app.get('/rocks', function(req, res) {
+  DB.getRocks(function(e, data) {
+    if (e) {
+      console.log(e);
+      res.status(500).send(e);
+    } else {
+      res.send(data);
+    }
+  });
+});
+
 app.post('/rocks/add', function(req, res) {
-  DB.addRock(req.body.data, function(e) {
+  DB.addRock(req.body, function(e) {
     if (e) {
       console.log(e);
       res.status(500).send();
@@ -46,7 +58,7 @@ app.post('/rocks/add', function(req, res) {
   });
 });
 
-app.delete('rocks/remove/:id', function(req, res) {
+app.delete('/rocks/remove/:id', function(req, res) {
   DB.removeRock(req.params.id, function(e) {
     if (e) {
       console.log(e);
