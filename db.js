@@ -27,7 +27,8 @@ DB.prototype.addRock = function(data, cb) {
 };
 
 DB.prototype.removeRock = function(id, cb) {
-  this.db.run('DELETE from rocks WHERE id = ' + id, function(e) {
+  var cmd = 'DELETE from rocks WHERE id = \'' + id + '\'';
+  this.db.run(cmd, function(e) {
     if (e) return cb(e);
     cb(null);
   });
