@@ -1,16 +1,14 @@
 #!/usr/bin/env node
 
 var net = require('net');
-//var WebSocketServer = require('websocket').server;
 var port = 9000;
-//var webSocket;
 
 /**
  * Server for getting data from Pi
  */
 var piServer = net.createServer(function(socket) {
   socket.setEncoding('utf8');
-  socket.on('connect', function() { console.log('new pi connection'); });
+  socket.on('connect', function() { console.log('New pi connection'); });
   socket.on('error', function() { console.log('Pi socket error'); });
   socket.on('data', function(chunk) {
     var data = chunk.split('|');
@@ -32,7 +30,7 @@ piServer.listen(port, function() {
 });
 
 /**
- * Web server
+ * Server for sending data to the web
  */
 var socketServer = new (require('ws').Server)({port: 9999});
 socketServer.broadcast = function(data) {
