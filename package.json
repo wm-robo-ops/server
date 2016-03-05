@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "./server.js",
+    "start-video-stream-server": "./video_stream_server.js",
+    "start-data-stream-server": "./data_stream_server.js"
   },
   "repository": {
     "type": "git",

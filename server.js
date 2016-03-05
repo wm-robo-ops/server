@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var express = require('express');
 var cors = require('cors');
 var bodyParser = require('body-parser');
@@ -19,7 +21,7 @@ var vehicles = [BIG_DADDY, SCOUT, FLYER];
 
 var center = [-95.081320, 29.564835];
 
-app.get('/stats', function(req, res) {
+app.get('/stats', function stats(req, res) {
   res.send(vehicles.reduce(function(p, c) {
     p[c] = {
       batteryLevel: random(0, 100, true),
@@ -35,8 +37,8 @@ app.get('/stats', function(req, res) {
   }, {}));
 });
 
-app.get('/rocks', function(req, res) {
-  DB.getRocks(function(e, data) {
+app.get('/rocks', function rocks(req, res) {
+  DB.getRocks(function dbRocksGet(e, data) {
     if (e) {
       console.log(e);
       res.status(500).send(e);
@@ -46,8 +48,8 @@ app.get('/rocks', function(req, res) {
   });
 });
 
-app.post('/rocks/add', function(req, res) {
-  DB.addRock(req.body, function(e) {
+app.post('/rocks/add', function rocksAdd(req, res) {
+  DB.addRock(req.body, function dbRocksRemove(e) {
     if (e) {
       console.log(e);
       res.status(500).send();
@@ -57,8 +59,8 @@ app.post('/rocks/add', function(req, res) {
   });
 });
 
-app.delete('/rocks/remove/:id', function(req, res) {
-  DB.removeRock(req.params.id, function(e) {
+app.delete('/rocks/remove/:id', function rocksRemove(req, res) {
+  DB.removeRock(req.params.id, function dbRocksRemove(e) {
     if (e) {
       console.log(e);
       res.status(500).send();

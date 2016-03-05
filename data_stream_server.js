@@ -8,12 +8,12 @@ var port = 9000;
  */
 var piServer = net.createServer(function(socket) {
   socket.setEncoding('utf8');
-  socket.on('connect', function() { console.log('New pi connection'); });
-  socket.on('error', function() { console.log('Pi socket error'); });
-  socket.on('data', function(chunk) {
-    var data = chunk.split('|');
+  socket.on('connect', function onConnect() { console.log('New pi connection'); });
+  socket.on('error', function onError() { console.log('Pi socket error'); });
+  socket.on('data', function onData(chunk) {
+    var chunks = chunk.split('|');
 
-    var o = data[data.length > 2 ? 1 : 0].split(',').reduce(function(prev, curr) {
+    var o = chunks[chunks.length > 2 ? 1 : 0].split(',').reduce(function(prev, curr) {
       curr = curr.split(':');
       prev[curr[0]] = curr[1];
       return prev;

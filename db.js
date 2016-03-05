@@ -7,7 +7,7 @@ function DB() {
 }
 
 DB.prototype.getRocks = function(cb) {
-  this.db.all('SELECT * from rocks', function(e, data) {
+  this.db.all('SELECT * from rocks', function selectRocks(e, data) {
     if (e) return cb(e);
     cb(null, data);
   });
@@ -20,7 +20,7 @@ DB.prototype.addRock = function(data, cb) {
       ' ' + data.lat + ', ' +
       '\'' + data.color + '\'' +
       ')';
-  this.db.run(cmd, function(e) {
+  this.db.run(cmd, function insertRock(e) {
     if (e) return cb(e);
     cb(null);
   });
@@ -28,7 +28,7 @@ DB.prototype.addRock = function(data, cb) {
 
 DB.prototype.removeRock = function(id, cb) {
   var cmd = 'DELETE from rocks WHERE id = \'' + id + '\'';
-  this.db.run(cmd, function(e) {
+  this.db.run(cmd, function deleteRock(e) {
     if (e) return cb(e);
     cb(null);
   });

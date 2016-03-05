@@ -40,7 +40,7 @@ Reponse
 
 Response: An array of rock data
 
-```
+```js
 [
 	{
 		"lon": <Number>,
