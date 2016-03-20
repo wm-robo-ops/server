@@ -1,19 +1,11 @@
 #!/usr/bin/env node
 
-if (process.argv.length < 3) {
-  console.log(
-    'Usage: \n' +
-    'node stream-server.js <secret> [<stream-port> <websocket-port>]'
-  );
-  throw new Error('ERROR');
-}
-
-var STREAM_PORT = process.argv[3] || 8082,
-    WEBSOCKET_PORT = process.argv[4] || 8084,
+var STREAM_PORT = 8082,
+    WEBSOCKET_PORT = 8084,
     STREAM_MAGIC_BYTES = 'jsmp'; // Must be 4 bytes
 
 var width = 320,
-  height = 240;
+    height = 240;
 
 // Websocket Server
 var socketServer = new (require('ws').Server)({port: WEBSOCKET_PORT});
@@ -44,13 +36,12 @@ socketServer.broadcast = function(data, opts) {
   }
 };
 
-
 // HTTP Server to accept incomming MPEG Stream
 var streamServer = require('http').createServer(function(request) {
   var params = request.url.substr(1).split('/');
 
-  width = (params[1] || 320) | 0;
-  height = (params[2] || 240) | 0;
+  width = (params[0] || 320) | 0;
+  height = (params[1] || 240) | 0;
 
   console.log(
     'Stream Connected: ' + request.socket.remoteAddress +
@@ -63,5 +54,5 @@ var streamServer = require('http').createServer(function(request) {
 
 streamServer.listen(STREAM_PORT);
 
-console.log('Listening for MPEG Stream on http://127.0.0.1:' + STREAM_PORT + '/<secret>/<width>/<height>');
+console.log('Listening for MPEG Stream on http://127.0.0.1:' + STREAM_PORT + '/<width>/<height>');
 console.log('Awaiting WebSocket connections on ws://127.0.0.1:' + WEBSOCKET_PORT + '/');
