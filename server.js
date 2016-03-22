@@ -219,15 +219,9 @@ socketServer.broadcast = function(data) {
 var piPhotoStreamServer = net.createServer(function(socket) {
   socket.on('error', function onError(error) { console.log('Pi photo stream socket error:', error); });
   var ws = fs.createWriteStream('p.png');
-  socket.on('connect', function onConnect() {
-    console.log('PHOTO: receiving');
-  });
-  socket.on('data', function onData(chunk) {
-    ws.write(chunk);
-  });
-  socket.on('close', function onClose() {
-    ws.end();
-  });
+  socket.on('connect', function onConnect() { console.log('PHOTO: receiving'); });
+  socket.on('data', function onData(chunk) { ws.write(chunk); });
+  socket.on('close', function onClose() { ws.end(); });
 });
 piPhotoStreamServer.on('connection', function onConnect() {
   console.log('New pi connected to photo stream server');
