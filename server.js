@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
+var fs = require('fs');
 var express = require('express');
 var net = require('net');
 var cors = require('cors');
 var bodyParser = require('body-parser');
-var utils = require('./utils');
+var random = require('./utils').random;
 var Db = require('./db');
 
 var app = express();
@@ -13,9 +14,7 @@ app.use(bodyParser.json());
 
 var DB = new Db();
 
-var PORT = '5555';
-
-var random = utils.random;
+var PORT = '5555'; // for main http server
 
 var BIG_DADDY = 'bigDaddy';
 var SCOUT = 'scout';
@@ -91,16 +90,36 @@ app.delete('/rocks/remove/:id', function rocksRemove(req, res) {
 });
 
 app.post('/video/:stream/:on', function toggleVideo(req, res) {
+  console.log('Command: turn on video -', req.params.stream);
   var ok = piCommandServer.sendCommand(commands.START_VIDEO_STREAM);
   cameras.flyer.on = true;
-  if (ok)
+  if (ok) {
     res.send('ok');
-  else
+  } else {
     res.status(500).send('ERROR: Could not toggle camera');
+  }
+});
+
+app.post('/dofdevice/:vehicle/:on', function gpsToggle(req, res) {
+  console.log('Command: turn on dof device - ', req.params.vehicle);
+  piCommandServer.sendCommand(commands.START_DIRECTION_SENSOR);
+  res.send('ok');
+});
+
+app.post('/gps/:vehicle/:on', function gpsToggle(req, res) {
+  console.log('Command: turn on GPS -', req.params.vehicle);
+  piCommandServer.sendCommand(commands.START_GPS_SENSOR);
+  res.send('ok');
+});
+
+app.post('/photo/:camera', function capturePhoto(req, res) {
+  console.log('Command: capture photo -', req.params.camera);
+  piCommandServer.sendCommand('START:CAPTURE_PHOTO|');
+  res.send('ok');
 });
 
 app.listen(PORT, function() {
-  console.log('Web - stats/rocks server port:', PORT);
+  console.log('WEB - stats/rocks server port:', PORT);
 });
 
 
@@ -117,6 +136,15 @@ var commands = {
   STOP_GPS_SENSOR: 'START:GPS_SENSOR|',
   PAN: 'START:PAN_TILT:5:5|'
 };
+
+/*
+function command(type, params) {
+  switch (type) {
+    case commandTypes.PHOTO:
+      return 'START:' + commands.CAPTURE_PHOTO + ':' + params.vehicle + '|';
+  }
+}
+*/
 
 var piCommandServer = new PiCommandServer(9998); // eslint-disable-line no-unused-vars
 
@@ -135,13 +163,12 @@ function PiCommandServer(port) {
     that.connected = true;
   });
   this.server.listen(this.port, function() {
-    console.log('Pi - command server port:', that.port);
+    console.log('PI - command server port:', that.port);
   });
 }
-
-PiCommandServer.prototype.sendCommand = function(/*command*/) {
+PiCommandServer.prototype.sendCommand = function(command) {
   //while (!this.connected) {} // eslint-disable-line no-empty
-  //this.socket.write(commands[command]);
+  this.socket.write(command);
   return true;
 };
 
@@ -152,7 +179,7 @@ PiCommandServer.prototype.sendCommand = function(/*command*/) {
  */
 var piDataStreamServer = net.createServer(function(socket) {
   socket.setEncoding('utf8');
-  socket.on('error', function onError() { console.log('Pi socket error'); });
+  socket.on('error', function onError() { console.log('Pi data stream socket error'); });
   socket.on('data', function onData(chunk) {
     var chunks = chunk.split('|');
 
@@ -167,27 +194,45 @@ var piDataStreamServer = net.createServer(function(socket) {
     }
   });
 });
-
 piDataStreamServer.on('connection', function onConnect() {
   console.log('New pi connected to data stream server');
 });
-
 piDataStreamServer.listen(9000, function() {
-  console.log('Pi - data stream server port:', 9000);
+  console.log('PI - data stream server port:', 9000);
 });
-
-/**
- * Server for sending data stream to the web
- */
+//Server for sending data stream to the web
 var socketServer = new (require('ws').Server)({ port: 9999 });
 socketServer.broadcast = function(data) {
   for (var i in this.clients) {
     if (this.clients[i].readyState === 1) {
       this.clients[i].send(data);
-    }
-    else {
+    } else {
       console.log('Error: Client (' + i + ') not connected.');
     }
   }
 };
 
+/************************************************************************************/
+/*
+ * photo stream socket
+ */
+var piPhotoStreamServer = net.createServer(function(socket) {
+  socket.on('error', function onError(error) { console.log('Pi photo stream socket error:', error); });
+  var ws = fs.createWriteStream('p.png');
+  socket.on('connect', function onConnect() {
+    console.log('PHOTO: receiving');
+  });
+  socket.on('data', function onData(chunk) {
+    ws.write(chunk);
+  });
+  socket.on('close', function onClose() {
+    ws.end();
+  });
+});
+piPhotoStreamServer.on('connection', function onConnect() {
+  console.log('New pi connected to photo stream server');
+});
+piPhotoStreamServer.listen(7777, function() {
+  console.log('Pi - photo stream server port:', 7777);
+  console.log('------------------------------------');
+});
