@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 var fs = require('fs');
+var path = require('path');
 var express = require('express');
 var net = require('net');
 var cors = require('cors');
@@ -12,6 +13,8 @@ var app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+var picName;
+
 var DB = new Db();
 
 var PORT = '5555'; // for main http server
@@ -22,18 +25,10 @@ var FLYER = 'flyer';
 var vehicles = [BIG_DADDY, SCOUT, FLYER];
 
 var cameras = {
-  bigDaddyMain: {
-    on: false
-  },
-  bigDaddyArm: {
-    on: false
-  },
-  scout: {
-    on: false
-  },
-  flyer: {
-    on: false
-  }
+  bigDaddyMain: { on: false },
+  bigDaddyArm: { on: false },
+  scout: { on: false },
+  flyer: { on: false }
 };
 
 var center = [-95.081320, 29.564835];
@@ -112,10 +107,19 @@ app.post('/gps/:vehicle/:on', function gpsToggle(req, res) {
   res.send('ok');
 });
 
-app.post('/photo/:camera', function capturePhoto(req, res) {
-  console.log('Command: capture photo -', req.params.camera);
-  piCommandServer.sendCommand('START:CAPTURE_PHOTO|');
+app.post('/photo/:name', function capturePhoto(req, res) {
+  var name = req.params.name;
+  console.log('Command: capture photo -', name);
+  picName = name;
+  piCommandServer.sendCommand('START:CAPTURE_PHOTO:' + name + '|');
   res.send('ok');
+});
+
+// serve photo directory
+app.use(express.static(path.join(__dirname, '/photos')));
+app.get('/photo', function sendPhoto(req, res) {
+  var pics = fs.readdirSync('./photos');
+  res.send(pics);
 });
 
 app.listen(PORT, function() {
@@ -123,8 +127,7 @@ app.listen(PORT, function() {
 });
 
 
-/************************************************************************************/
-/*
+/************************************************************************************
  * command socket
  */
 var commands = {
@@ -136,15 +139,6 @@ var commands = {
   STOP_GPS_SENSOR: 'START:GPS_SENSOR|',
   PAN: 'START:PAN_TILT:5:5|'
 };
-
-/*
-function command(type, params) {
-  switch (type) {
-    case commandTypes.PHOTO:
-      return 'START:' + commands.CAPTURE_PHOTO + ':' + params.vehicle + '|';
-  }
-}
-*/
 
 var piCommandServer = new PiCommandServer(9998); // eslint-disable-line no-unused-vars
 
@@ -173,8 +167,7 @@ PiCommandServer.prototype.sendCommand = function(command) {
 };
 
 
-/************************************************************************************/
-/*
+/************************************************************************************
  * data stream socket
  */
 var piDataStreamServer = net.createServer(function(socket) {
@@ -212,15 +205,16 @@ socketServer.broadcast = function(data) {
   }
 };
 
-/************************************************************************************/
-/*
+/************************************************************************************
  * photo stream socket
  */
 var piPhotoStreamServer = net.createServer(function(socket) {
   socket.on('error', function onError(error) { console.log('Pi photo stream socket error:', error); });
-  var ws = fs.createWriteStream('p.png');
+  var ws = fs.createWriteStream('./photos/' + picName);
   socket.on('connect', function onConnect() { console.log('PHOTO: receiving'); });
-  socket.on('data', function onData(chunk) { ws.write(chunk); });
+  socket.on('data', function onData(chunk) {
+    ws.write(chunk);
+  });
   socket.on('close', function onClose() { ws.end(); });
 });
 piPhotoStreamServer.on('connection', function onConnect() {

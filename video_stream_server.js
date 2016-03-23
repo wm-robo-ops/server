@@ -46,5 +46,5 @@ var streamServer = require('http').createServer(function(request) {
 
 streamServer.listen(STREAM_PORT);
 
-console.log('PI: video stream server port:', STREAM_PORT + '/<width>/<height>');
+console.log('PI: video stream server port:', STREAM_PORT);
 console.log('WEB: video stream server port:', WEBSOCKET_PORT);
