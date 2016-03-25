@@ -18,8 +18,10 @@ var picName;
 var DB = new Db();
 
 var photosDir = './photos';
-if (!fs.existsSync(photosDir))
+if (!fs.existsSync(photosDir)) {
+  console.log('Creating photo directory');
   fs.mkdirSync(photosDir);
+}
 
 var PORT = '5555'; // for main http server
 

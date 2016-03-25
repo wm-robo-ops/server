@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+var net = require('net');
 var STREAM_PORT = 8082,
     WEBSOCKET_PORT = 8084,
     STREAM_MAGIC_BYTES = 'jsmp'; // Must be 4 bytes
@@ -36,6 +37,7 @@ socketServer.broadcast = function(data, opts) {
 };
 
 // HTTP Server to accept incoming MPEG Stream
+/*
 var streamServer = require('http').createServer(function(request) {
   console.log('Stream Connected: ' + request.socket.remoteAddress +
       ':' + request.socket.remotePort + ' size: ' + 320 + 'x' + 340);
@@ -45,6 +47,14 @@ var streamServer = require('http').createServer(function(request) {
 });
 
 streamServer.listen(STREAM_PORT);
+*/
+var streamServer = net.createServer(function(socket) {
+  console.log('Stream connected');
+  socket.on('data', function onData(data) {
+    socketServer.broadcast(data, {binary: true});
+  });
+});
+streamServer.listen(8082);
 
 console.log('PI: video stream server port:', STREAM_PORT);
 console.log('WEB: video stream server port:', WEBSOCKET_PORT);
