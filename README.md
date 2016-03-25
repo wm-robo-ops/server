@@ -4,8 +4,9 @@ Backend that powers the [dashboard](http://wm-robo-ops.github.io/dashboard/). Bu
 
 ## Dependencies
 
-- ffmpeg (on rover pi)
-- Node.js
+- [Node.js](https://nodejs.org/en/)
+- [sqlite3](https://www.sqlite.org/index.html)
+- [node-sqlite3](https://github.com/mapbox/node-sqlite3)
 
 ## API Endpoints
 

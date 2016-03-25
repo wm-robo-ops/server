@@ -47,6 +47,10 @@ var dofDevice = {
 
 var center = [-95.081320, 29.564835];
 
+app.get('/', function(req, res) {
+  res.send('sup ;)');
+});
+
 app.get('/stats', function stats(req, res) {
   var resData = {
     cameras: cameras,
