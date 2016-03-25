@@ -51,6 +51,15 @@ app.get('/', function(req, res) {
   res.send('sup ;)');
 });
 
+app.post('/password', function password(req, res) {
+  console.log('WEB: Authentication');
+  if (req.body.password === process.env.ROBO_OPS_PASSWORD) {
+    res.send('ok');
+  } else {
+    res.send('incorrect password');
+  }
+});
+
 app.get('/stats', function stats(req, res) {
   var resData = {
     cameras: cameras,
