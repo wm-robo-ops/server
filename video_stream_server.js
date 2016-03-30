@@ -36,18 +36,7 @@ socketServer.broadcast = function(data, opts) {
   }
 };
 
-// HTTP Server to accept incoming MPEG Stream
-/*
-var streamServer = require('http').createServer(function(request) {
-  console.log('Stream Connected: ' + request.socket.remoteAddress +
-      ':' + request.socket.remotePort + ' size: ' + 320 + 'x' + 340);
-  request.on('data', function onData(data){
-    socketServer.broadcast(data, {binary: true});
-  });
-});
-
-streamServer.listen(STREAM_PORT);
-*/
+// Server to accept incoming MPEG Stream
 var streamServer = net.createServer(function(socket) {
   console.log('Stream connected');
   socket.on('data', function onData(data) {

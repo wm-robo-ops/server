@@ -31,10 +31,10 @@ var FLYER = 'flyer';
 var vehicles = [BIG_DADDY, SCOUT, FLYER];
 
 var cameras = {
-  bigDaddyMain: { on: false },
-  bigDaddyArm: { on: false },
-  scout: { on: false },
-  flyer: { on: false }
+  bigDaddyMain: { vehicle: BIG_DADDY, on: false, ip: '' },
+  bigDaddyArm: { vehicle: BIG_DADDY, on: false, ip: '' },
+  scout: { vehicle: SCOUT, on: false, ip: '' },
+  flyer: { vehicle: FLYER, on: false, ip: '' }
 };
 var gps = {
   bigDaddy: false,
@@ -194,7 +194,6 @@ app.listen(PORT, function() {
   console.log('WEB - stats/rocks server port:', PORT);
 });
 
-
 /************************************************************************************
  * command socket
  */
@@ -211,26 +210,47 @@ var commands = {
 var piCommandServer = new PiCommandServer(9998);
 
 function PiCommandServer(port) {
+  this.sockets = {};
   this.port = port;
   this.connected = false;
   var that = this;
   this.server = net.createServer(function(socket) {
+    socket.nameSet = false;
+    socket.name = '';
     socket.setEncoding('utf8');
     socket.on('error', function onError(error) { console.log('Socket Error: ', error); });
-    socket.on('data', function onData(chunk) { console.log(chunk); });
+    socket.on('data', function onData(chunk) {
+      if (!socket.nameSet) {
+        chunk = chunk.split('~');
+        socket.name += chunk[0];
+        if (chunk.length > 1) {
+          socket.nameSet = true;
+          that.sockets[socket.name] = socket;
+          chunk = chunk[1];
+        } else {
+          chunk = '';
+        }
+      }
+    });
+    socket.on('close', function onClose() {
+      delete that.sockets[socket.name];
+    });
   });
-  this.server.on('connection', function onConnection(s) {
+  this.server.on('connection', function onConnection(/*s*/) {
     console.log('New pi connected to command server');
-    that.socket = s;
-    that.connected = true;
   });
   this.server.listen(this.port, function() {
     console.log('PI - command server port:', that.port);
   });
 }
-PiCommandServer.prototype.sendCommand = function(command) {
+PiCommandServer.prototype.sendCommand = function(command, device) {
+  device = '192.168.1.133';
+  if (!(device in this.sockets)) {
+    console.log(device, 'not connected');
+    return false;
+  }
   try {
-    this.socket.write(command);
+    this.sockets[device].write(command);
   }
   catch (e) {
     if (e instanceof TypeError)
@@ -246,10 +266,14 @@ PiCommandServer.prototype.sendCommand = function(command) {
 /************************************************************************************
  * data stream socket
  */
+//var dataStreamSockets = {};
 var piDataStreamServer = net.createServer(function(socket) {
   socket.setEncoding('utf8');
   socket.on('error', function onError() { console.log('Pi data stream socket error'); });
   socket.on('data', function onData(chunk) {
+    if (!socket.nameSet) {
+      //chunk = chunk.split('~');
+    }
     var chunks = chunk.split('|');
 
     var o = chunks[chunks.length > 2 ? 1 : 0].split(',').reduce(function(prev, curr) {
