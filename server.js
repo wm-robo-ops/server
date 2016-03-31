@@ -31,10 +31,10 @@ var FLYER = 'flyer';
 var vehicles = [BIG_DADDY, SCOUT, FLYER];
 
 var cameras = {
-  bigDaddyMain: { vehicle: BIG_DADDY, on: false, ip: '' },
-  bigDaddyArm: { vehicle: BIG_DADDY, on: false, ip: '' },
-  scout: { vehicle: SCOUT, on: false, ip: '' },
-  flyer: { vehicle: FLYER, on: false, ip: '' }
+  bigDaddyMain: { vehicle: BIG_DADDY, on: false, ip: '', nameReadable: 'Big Daddy Main' },
+  bigDaddyArm: { vehicle: BIG_DADDY, on: false, ip: '', nameReadable: 'Big Daddy Arm' },
+  scout: { vehicle: SCOUT, on: false, ip: '', nameReadable: 'Scout Main' },
+  flyer: { vehicle: FLYER, on: false, ip: '', nameReadable: 'Flyer Main' }
 };
 var gps = {
   bigDaddy: false,
