@@ -38,14 +38,14 @@ var cameras = {
   flyer: { vehicle: FLYER, on: false, ip: '', nameReadable: 'Flyer Main', frameRate: 30, port: 8004 }
 };
 var gps = {
-  bigDaddy: { on: false, port: 4001 },
-  scout: { on: false, port: 4002 },
-  flyer: { on: false, port: 4003 }
+  bigDaddy: { on: false, port: 4001, name: 'bigDaddy' },
+  scout: { on: false, port: 4002, name: 'scout' },
+  flyer: { on: false, port: 4003, name: 'flyer' }
 };
 var dofDevice = {
-  bigDaddy: { on: false, port: 3001 },
-  scout: { on: false, port: 3002 },
-  flyer: { on: false, port: 3003 }
+  bigDaddy: { on: false, port: 3001, name: 'bigDaddy' },
+  scout: { on: false, port: 3002, name: 'scout' },
+  flyer: { on: false, port: 3003, name: 'flyer' }
 };
 
 var center = [-95.081320, 29.564835];
