@@ -95,10 +95,10 @@ ROBO_OPS_PASSWORD="<THE_PASSWORD>" ./server.js
     - `3002`: Web/scout
     - `3003`: Web/flyer
 - 400* - gps
-    - `3000`: Pi server
-    - `3001`: Web/big daddy
-    - `3002`: Web/scout
-    - `3003`: Web/flyer
+    - `4000`: Pi server
+    - `4001`: Web/big daddy
+    - `4002`: Web/scout
+    - `4003`: Web/flyer
 - 800* - cameras
     - `8000`: Pi Server
     - `8001`: Web/big daddy main
