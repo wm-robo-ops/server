@@ -223,7 +223,7 @@ var commands = {
   PAN: 'START:PAN_TILT:5:5|'
 };
 
-var piCommandServer = new PiCommandServer(9998);
+var piCommandServer = new PiCommandServer(9000);
 
 function PiCommandServer(port) {
   this.sockets = {};
@@ -372,7 +372,7 @@ var piPhotoStreamServer = net.createServer(function(socket) {
 piPhotoStreamServer.on('connection', function onConnect() {
   console.log('New pi connected to photo stream server');
 });
-piPhotoStreamServer.listen(7777, function() {
-  console.log('PI - photo stream server port:', 7777);
+piPhotoStreamServer.listen(7000, function() {
+  console.log('PI - photo stream server port:', 7000);
   console.log('------------------------------------');
 });

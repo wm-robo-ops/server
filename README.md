@@ -12,31 +12,6 @@ Backend that powers the [dashboard](http://wm-robo-ops.github.io/dashboard/). Bu
 
 ####`/stats`
 
-Reponse
-
-```js
-{
-    "bigDaddy": {
-        "battery": <Number>, // battery percentage remaining
-        "network": <Number>, // network strength
-        "location": Array<Number>, // [lon, lat]
-        "bearing": <Number> // in degrees counterclockwise from north
-    },
-    "scout": {
-        "battery": <Number>,
-        "network": <Number>,
-        "location": Array<Number>,
-        "bearing": <Number>
-    },
-    "flyer": {
-        "battery": <Number>,
-        "network": <Number>,
-        "location": Array<Number>,
-        "bearing": <Number>
-    }
-}
-```
-
 ####`/rocks`
 
 Response: An array of rock data
@@ -98,9 +73,9 @@ git clone https://github.com/wm-robo-ops/server.git && cd server
 npm install
 ```
 
-#### Start stats/socks API
+#### Start the main server
 ```
-npm start
+ROBO_OPS_PASSWORD="<THE_PASSWORD>" ./server.js
 ```
 
 #### Start video server
@@ -109,10 +84,25 @@ npm start
 ./video_server.js
 ```
 
-## On the rover
+## Ports
 
-Run
+- 5555 - Web API
+- 9000 - Pi command server
+- 7000 - Pi camera streaming server
+- 300* - dof devices
+    - `3000`: Pi Server
+    - `3001`: Web/big daddy
+    - `3002`: Web/scout
+    - `3003`: Web/flyer
+- 400* - gps
+    - `3000`: Pi server
+    - `3001`: Web/big daddy
+    - `3002`: Web/scout
+    - `3003`: Web/flyer
+- 800* - cameras
+    - `8000`: Pi Server
+    - `8001`: Web/big daddy main
+    - `8002`: Web/big daddy arm
+    - `8003`: Web/scout
+    - `8004`: Web/flyer
 
-```
-./start_video_stream.sh
-```
