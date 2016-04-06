@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 var express = require('express');
 var cors = require('cors');
+var bodyParser = require('body-parser');
 var app = express();
 
 var PORT = 10000;
 
 app.use(cors());
+app.use(bodyParser.json());
 
 app.post('/', function password(req, res) {
   console.log('WEB: Authentication');
