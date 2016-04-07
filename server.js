@@ -35,6 +35,7 @@ var vehicles = [BIG_DADDY, SCOUT, FLYER];
 var deviceIds = {
   camera: {
     bigDaddyMain: '192.168.1.133',
+    bigDaddyMount1: '192.168.1.121',
     bigDaddyArm: '192.168.1.133',
     scout: '192.168.1.133',
     rover: '192.168.1.133'
@@ -53,9 +54,10 @@ var deviceIds = {
 
 var cameras = {
   bigDaddyMain: { vehicle: BIG_DADDY, on: false, ip: '', nameReadable: 'Big Daddy Main', frameRate: 30, port: 8001 },
-  bigDaddyArm: { vehicle: BIG_DADDY, on: false, ip: '', nameReadable: 'Big Daddy Arm', frameRate: 30, port: 8002 },
-  scout: { vehicle: SCOUT, on: false, ip: '', nameReadable: 'Scout Main', frameRate: 30, port: 8003 },
-  flyer: { vehicle: FLYER, on: false, ip: '', nameReadable: 'Flyer Main', frameRate: 30, port: 8004 }
+  bigDaddyMount1: { vehicle: BIG_DADDY, on: false, ip: '', nameReadable: 'Big Daddy Mount 1', frameRate: 30, port: 8002 },
+  bigDaddyArm: { vehicle: BIG_DADDY, on: false, ip: '', nameReadable: 'Big Daddy Arm', frameRate: 30, port: 8003 },
+  scout: { vehicle: SCOUT, on: false, ip: '', nameReadable: 'Scout Main', frameRate: 30, port: 8004 },
+  flyer: { vehicle: FLYER, on: false, ip: '', nameReadable: 'Flyer Main', frameRate: 30, port: 8005 }
 };
 var gps = {
   bigDaddy: { on: false, port: 4001, name: 'bigDaddy' },

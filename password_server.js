@@ -10,7 +10,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.post('/', function password(req, res) {
-  console.log('WEB: Authentication');
+  console.log('WEB Authentication:', req.socket.remoteAddress);
   if (req.body.password === process.env.ROBO_OPS_PASSWORD) {
     res.send('ok');
   } else {
@@ -20,4 +20,5 @@ app.post('/', function password(req, res) {
 
 app.listen(PORT, function() {
   console.log('WEB - authentication server port:', PORT);
+  console.log('---------------------------------');
 });
