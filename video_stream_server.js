@@ -11,9 +11,10 @@ var width = 320,
 
 var servers = {
   '192.168.1.133': createWebSocketServer({ port: 8001 }),
-  bigDaddyArm: createWebSocketServer({ port: 8002 }),
-  scout: createWebSocketServer({ port: 8003 }),
-  flyer: createWebSocketServer({ port: 8004 })
+  '192.168.1.121': createWebSocketServer({ port: 8002 }),
+  bigDaddyArm: createWebSocketServer({ port: 8003 }),
+  scout: createWebSocketServer({ port: 8004 }),
+  flyer: createWebSocketServer({ port: 8005 })
 };
 function createWebSocketServer(opts) {
   var socketServer = new ws.Server({port: opts.port});
