@@ -36,19 +36,19 @@ var deviceIds = {
   camera: {
     bigDaddyMain: '192.168.1.133',
     bigDaddyMount1: '192.168.1.121',
-    bigDaddyArm: '192.168.1.133',
+    bigDaddyArm: '192.168.1.151',
     scout: '192.168.1.142',
-    rover: '192.168.1.133'
+    rover: '192.168.1.000'
   },
   gps: {
-    bigDaddy: '192.168.1.133',
-    scout: '192.168.1.133',
-    rover: '192.168.1.133'
+    bigDaddy: '192.168.1.000',
+    scout: '192.168.1.000',
+    rover: '192.168.1.000'
   },
   dof: {
-    bigDaddy: '192.168.1.133',
-    scout: '192.168.1.133',
-    rover: '192.168.1.133'
+    bigDaddy: '192.168.1.00',
+    scout: '192.168.1.000',
+    rover: '192.168.1.000'
   }
 };
 

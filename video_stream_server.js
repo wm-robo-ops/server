@@ -12,7 +12,7 @@ var width = 320,
 var servers = {
   '192.168.1.133': createWebSocketServer({ port: 8001 }),
   '192.168.1.121': createWebSocketServer({ port: 8002 }),
-  bigDaddyArm: createWebSocketServer({ port: 8003 }),
+  '192.168.1.151': createWebSocketServer({ port: 8003 }),
   '192.168.1.142': createWebSocketServer({ port: 8004 }),
   flyer: createWebSocketServer({ port: 8005 })
 };
