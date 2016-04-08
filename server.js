@@ -37,7 +37,7 @@ var deviceIds = {
     bigDaddyMain: '192.168.1.133',
     bigDaddyMount1: '192.168.1.121',
     bigDaddyArm: '192.168.1.133',
-    scout: '192.168.1.133',
+    scout: '192.168.1.142',
     rover: '192.168.1.133'
   },
   gps: {

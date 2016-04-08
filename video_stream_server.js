@@ -13,7 +13,7 @@ var servers = {
   '192.168.1.133': createWebSocketServer({ port: 8001 }),
   '192.168.1.121': createWebSocketServer({ port: 8002 }),
   bigDaddyArm: createWebSocketServer({ port: 8003 }),
-  scout: createWebSocketServer({ port: 8004 }),
+  '192.168.1.142': createWebSocketServer({ port: 8004 }),
   flyer: createWebSocketServer({ port: 8005 })
 };
 function createWebSocketServer(opts) {
