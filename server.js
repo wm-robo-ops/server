@@ -237,6 +237,17 @@ app.get('/rocks/geojson', function rocksGeoj(req, res) {
   });
 });
 
+app.get('/TSP', function tsp(req, res) {
+  var rock_data = DB.getRocks(function dbRocksGet(e, data) {
+    if (e) {
+      console.log(e);
+      res.status(500).send(e);
+    } else {
+      res.send(data);
+    }
+  });
+});
+
 app.post('/rocks/add', function rocksAdd(req, res) {
   DB.addRock(req.body, function dbRocksRemove(e) {
     if (e) {
