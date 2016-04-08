@@ -83,7 +83,7 @@ setInterval(function() {
   bigDaddyTrace.push(location.bigDaddy);
   scoutTrace.push(location.scout);
   flyerTrace.push(location.flyer);
-}, 30000);
+}, 1800000);
 
 var bigDaddyTrace = [];
 var scoutTrace = [];
