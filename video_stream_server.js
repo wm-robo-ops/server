@@ -48,9 +48,24 @@ function createWebSocketServer(opts) {
 
 // Server to accept incoming MPEG Stream
 var streamServer = net.createServer(function(socket) {
+  this.piSockets = {};
+  var that = this;
   console.log('Stream connected');
-  socket.on('data', function onData(data) {
-    servers['192.168.1.133'].broadcast(data, {binary: true});
+  socket.on('data', function onData(chunk) {
+      if (!socket.nameSet) {
+        chunk = chunk.toString('utf8').split('~');
+        socket.name = chunk[0];
+        if (chunk.length > 1) {
+          that.piSockets[socket.name] = socket;
+          socket.nameSet = true;
+          console.log('New Pi id:', socket.name);
+          chunk.shift();
+          chunk = chunk.join();
+        } else {
+          return;
+        }
+      }
+      servers[socket.name].broadcast(chunk, {binary: true});
   });
 });
 streamServer.listen(PI_STREAM_PORT);

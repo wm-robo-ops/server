@@ -76,6 +76,105 @@ app.get('/', function(req, res) {
   res.send('sup ;)');
 });
 
+var location = {};
+
+setInterval(function() {
+  if (!(location.bigDaddy && location.scout && location.flyer)) return;
+  bigDaddyTrace.push(location.bigDaddy);
+  scoutTrace.push(location.scout);
+  flyerTrace.push(location.flyer);
+}, 30000);
+
+var bigDaddyTrace = [];
+var scoutTrace = [];
+var flyerTrace = [];
+
+var locationGeoj = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      properties: {
+        name: 'bigDaddy',
+        icon: 'bus'
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: location.bigDaddy
+      }
+    },
+    {
+      type: 'Feature',
+      properties: {
+        name: 'scout',
+        icon: 'car'
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: location.scout
+      }
+    },
+    {
+      type: 'Feature',
+      properties: {
+        name: 'flyer',
+        icon: 'airfield'
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: location.flyer
+      }
+    }
+  ]
+};
+
+var trace = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      properties: {
+        vehicle: 'bigDaddy'
+      },
+      geometry: {
+        type: 'LineString',
+        coordinates: bigDaddyTrace
+      }
+    },
+    {
+      type: 'Feature',
+      properties: {
+        vehicle: 'scout'
+      },
+      geometry: {
+        type: 'LineString',
+        coordinates: scoutTrace
+      }
+    },
+    {
+      type: 'Feature',
+      properties: {
+        vehicle: 'flyer'
+      },
+      geometry: {
+        type: 'LineString',
+        coordinates: flyerTrace
+      }
+    }
+  ]
+};
+
+app.get('/location', function loc(req, res) {
+  locationGeoj.features[0].geometry.coordinates = location.bigDaddy || [0, 0];
+  locationGeoj.features[1].geometry.coordinates = location.scout || [0, 0];
+  locationGeoj.features[2].geometry.coordinates = location.flyer || [0, 0];
+  res.send(locationGeoj);
+});
+
+app.get('/trace', function tr(req, res) {
+  res.send(trace);
+});
+
 app.get('/stats', function stats(req, res) {
   var resData = {
     cameras: cameras,
@@ -83,13 +182,12 @@ app.get('/stats', function stats(req, res) {
     dofDevice: dofDevice
   };
   resData.vehicles = vehicles.reduce(function(p, c) {
+    location[c] = [
+      random(center[0] - 0.0004, center[0] + 0.0004),
+      random(center[1] - 0.0004, center[1] + 0.0004)
+    ];
     p[c] = {
-      location: [
-        random(center[0] - 0.0004, center[0] + 0.0004),
-        random(center[1] - 0.0004, center[1] + 0.0004)
-      ],
-      bearing: random(0, 180, true),
-      pitch: [random(0, 2 * Math.PI), random(0, 2 * Math.PI), random(0, 2 * Math.PI)]
+      location: location[c]
     };
     return p;
   }, {});
@@ -103,6 +201,32 @@ app.get('/rocks', function rocks(req, res) {
       res.status(500).send(e);
     } else {
       res.send(data);
+    }
+  });
+});
+
+app.get('/rocks/geojson', function rocksGeoj(req, res) {
+  DB.getRocks(function dbRocksGet(e, data) {
+    if (e) {
+      console.log(e);
+      res.status(500).send(e);
+    } else {
+      res.send({
+        type: 'FeatureCollection',
+        features: data.map(function(rock) {
+          return {
+            type: 'Feature',
+            properties: {
+              color: rock.color,
+              id: rock.id
+            },
+            geometry: {
+              type: 'Point',
+              coordinates: [rock.lon, rock.lat]
+            }
+          };
+        })
+      });
     }
   });
 });
