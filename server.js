@@ -243,10 +243,10 @@ app.get('/TSP', function tsp(req, res) {
       console.log(e);
       res.status(500).send(e);
     } else {
-      var nodes = require('fs');
+      var fs = require('fs');
       var file_name = __dirname.toString() + "\\nodes.txt";
       //need to write bigDaddy Location and Kosmo location here
-      nodes.writeFile(file_name, "", function(err) {
+      fs.writeFile(file_name, "", function(err) {
         if (err) {
           return console.log(err);
 	}
@@ -255,7 +255,7 @@ app.get('/TSP', function tsp(req, res) {
       //var json = JSON.parse("[{\"id\":\"d9ee04bd786d27ba2f0c219fd829e75b\",\"lon\":-95.08166840617106,\"lat\":29.565143594744836,\"color\":\"purple\"},{\"id\":\"6175ebe760c1094f43762b524ddadced\",\"lon\":-95.08143525465287,\"lat\":29.564897119535168,\"color\":\"yellow\"},{\"id\":\"d00bfc63d9711191fdb60f09d6b81282\",\"lon\":-95.08119665624899,\"lat\":29.565219744706376,\"color\":\"green\"}]");
       json.forEach(function(value) {
         var line = value.lat + ":" + value.lon + ":" + value.color + "\n";
-        nodes.appendFile(file_name, line, function(err) {
+        fs.appendFile(file_name, line, function(err) {
 	  if (err) {
 	    return console.log(err);
 	  }
