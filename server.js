@@ -7,6 +7,8 @@ var cors = require('cors');
 var bodyParser = require('body-parser');
 var random = require('./utils').random;
 var Db = require('./db');
+var fs = require('fs');
+var exec = require('child_process').exec;
 
 var app = express();
 app.use(cors());
@@ -26,6 +28,9 @@ if (!fs.existsSync(photosDir)) {
 
 var STATS_SERVER_PORT = '5555';
 var PHOTO_STREAM_PORT = '7000';
+
+var MOUNT_KOSMO_LAT = "-95.081505";
+var MOUNT_KOSMO_LON = "29.564962";
 
 var BIG_DADDY = 'bigDaddy';
 var SCOUT = 'scout';
@@ -243,28 +248,30 @@ app.get('/TSP', function tsp(req, res) {
       console.log(e);
       res.status(500).send(e);
     } else {
-      var fs = require('fs');
       var file_name = __dirname.toString() + "\\nodes.txt";
-      //need to write bigDaddy Location and Kosmo location here
-      fs.writeFile(file_name, "", function(err) {
-        if (err) {
-          return console.log(err);
-	}
-      });
-      var json = JSON.stringify(data);
-      //var json = JSON.parse("[{\"id\":\"d9ee04bd786d27ba2f0c219fd829e75b\",\"lon\":-95.08166840617106,\"lat\":29.565143594744836,\"color\":\"purple\"},{\"id\":\"6175ebe760c1094f43762b524ddadced\",\"lon\":-95.08143525465287,\"lat\":29.564897119535168,\"color\":\"yellow\"},{\"id\":\"d00bfc63d9711191fdb60f09d6b81282\",\"lon\":-95.08119665624899,\"lat\":29.565219744706376,\"color\":\"green\"}]");
-      json.forEach(function(value) {
-        var line = value.lat + ":" + value.lon + ":" + value.color + "\n";
-        fs.appendFile(file_name, line, function(err) {
-	  if (err) {
-	    return console.log(err);
+      if (location.bigDaddy) {
+        var init_nodes = MOUNT_KOSMO_LAT + ":" + MOUNT_KOSMO_LON + ":" + "kosmo\n";
+        init_nodes += location.bigDaddy[1].toString() + ":" + location.bigDaddy[0].toString() + ":" + "bigDaddy\n";
+        fs.writeFile(file_name, init_nodes, function(err) {
+          if (err) {
+            return console.log(err);
 	  }
-	});
-      });
-      var exec = require('child_process').exec;
-      exec('TSP.exe', function callback(error, stdout, stderr) {
-        res.send(stdout.toString());
-      });
+        });
+        var json = JSON.stringify(data);
+        json.forEach(function(value) {
+          var line = value.lat + ":" + value.lon + ":" + value.color + "\n";
+          fs.appendFile(file_name, line, function(err) {
+	    if (err) {
+	      return console.log(err);
+	    }
+	  });
+        });
+        exec('TSP.exe', function callback(error, stdout, stderr) {
+          res.send(stdout.toString());
+        });
+      } else {
+         res.send("No data");
+      }
     }
   });
 });
