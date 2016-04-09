@@ -28,8 +28,8 @@ if (!fs.existsSync(photosDir)) {
 var STATS_SERVER_PORT = '5555';
 var PHOTO_STREAM_PORT = '7000';
 
-var MOUNT_KOSMO_LAT = "-95.081505";
-var MOUNT_KOSMO_LON = "29.564962";
+var MOUNT_KOSMO_LAT = '-95.081505';
+var MOUNT_KOSMO_LON = '29.564962';
 
 var BIG_DADDY = 'bigDaddy';
 var SCOUT = 'scout';
@@ -42,17 +42,17 @@ var deviceIds = {
     bigDaddyMount1: '192.168.1.121',
     bigDaddyArm: '192.168.1.151',
     scout: '192.168.1.142',
-    rover: '192.168.1.000'
+    flyer: '192.168.1.000'
   },
   gps: {
     bigDaddy: '192.168.1.000',
     scout: '192.168.1.000',
-    rover: '192.168.1.000'
+    flyer: '192.168.1.000'
   },
   dof: {
     bigDaddy: '192.168.1.00',
     scout: '192.168.1.000',
-    rover: '192.168.1.000'
+    flyer: '192.168.1.000'
   }
 };
 
@@ -90,9 +90,9 @@ setInterval(function() {
 }, 30000);
 
 setInterval(function() {
-  bigDaddyTrace = [];
-  scoutTrace = [];
-  flyerTrace = [];
+  bigDaddyTrace.length = 0;
+  scoutTrace.length = 0;
+  flyerTrace.length = 0;
 }, 3600000);
 
 var bigDaddyTrace = [];
@@ -241,37 +241,38 @@ app.get('/rocks/geojson', function rocksGeoj(req, res) {
   });
 });
 
-app.get('/TSP', function tsp(req, res) {
+app.get('/path', function tsp(req, res) {
   DB.getRocks(function dbRocksGet(e, data) {
     if (e) {
       console.log(e);
-      res.status(500).send(e);
-    } else {
-      var file_name = __dirname.toString() + "\\nodes.txt";
-      if (location.bigDaddy) {
-        var init_nodes = MOUNT_KOSMO_LAT + ":" + MOUNT_KOSMO_LON + ":" + "kosmo\n";
-        init_nodes += location.bigDaddy[1].toString() + ":" + location.bigDaddy[0].toString() + ":" + "bigDaddy\n";
-        fs.writeFile(file_name, init_nodes, function(err) {
-          if (err) {
-            return console.log(err);
-	  }
-        });
-        var json = JSON.parse(data);
-        json.forEach(function(value) {
-          var line = value.lat + ":" + value.lon + ":" + value.color + "\n";
-          fs.appendFile(file_name, line, function(err) {
-	    if (err) {
-	      return console.log(err);
-	    }
-	  });
-        });
-        exec('TSP.exe', function callback(error, stdout, stderr) {
-          res.send(stdout.toString());
-        });
-      } else {
-         res.send("No data");
-      }
+      return res.status(500).send(e);
     }
+    var fileName = path.join(__dirname, '/nodes.txt');
+    location.bigDaddy = [0, 0];
+    if (!location.bigDaddy) {
+      return res.send('No data');
+    }
+    var initNodes = MOUNT_KOSMO_LAT + ':' + MOUNT_KOSMO_LON + ':' + 'kosmo\n';
+    initNodes += location.bigDaddy[1].toString() + ':' + location.bigDaddy[0].toString() + ':' + 'bigDaddy\n';
+    fs.writeFileSync(fileName, initNodes);
+    for (var i = 0; i < data.length; i++) {
+      var value = data[i];
+      var line = value.lat + ':' + value.lon + ':' + value.color + '\n';
+      fs.appendFileSync(fileName, line);
+    }
+    exec('./TSP', function callback(error, stdout) {
+      var out = JSON.parse(stdout.toString());
+      res.send({
+        type: 'Feature',
+        properties: 'path',
+        geometry: {
+          type: 'LineString',
+          coordinates: out.nodes.slice(1, 3).map(function(coords) {
+            return [coords.lon, coords.lat];
+          })
+        }
+      });
+    });
   });
 });
 

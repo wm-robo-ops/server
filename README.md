@@ -1,6 +1,6 @@
 # W&M Robo-Ops Dashboard Server
 
-Backend that powers the [dashboard](http://wm-robo-ops.github.io/dashboard/). Built with [Express.js](http://expressjs.com/) and [Socket.io](http://socket.io/)
+Backend that powers the [dashboard](http://wm-robo-ops.github.io/dashboard/)
 
 ## Dependencies
 
@@ -11,21 +11,6 @@ Backend that powers the [dashboard](http://wm-robo-ops.github.io/dashboard/). Bu
 ## API Endpoints
 
 ####`/stats`
-
-####`/rocks`
-
-Response: An array of rock data
-
-```js
-[
-	{
-		"lon": <Number>,
-		"lat": <Number>,
-		"color": <String>,
-		"id": <String>
-	}
-]
-```
 
 ####`/rocks/add`
 
@@ -71,17 +56,15 @@ some video streaming socket
 ```
 git clone https://github.com/wm-robo-ops/server.git && cd server
 npm install
+make
 ```
 
-#### Start the main server
+#### Start the servers
 ```
-ROBO_OPS_PASSWORD="<THE_PASSWORD>" ./server.js
-```
-
-#### Start video server
-
-```
-./video_server.js
+./server.js
+./password_server.js
+./video_stream_server.js
+./dof_stream_server.js
 ```
 
 ## Ports
