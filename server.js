@@ -256,7 +256,7 @@ app.get('/TSP', function tsp(req, res) {
             return console.log(err);
 	  }
         });
-        var json = JSON.stringify(data);
+        var json = JSON.parse(data);
         json.forEach(function(value) {
           var line = value.lat + ":" + value.lon + ":" + value.color + "\n";
           fs.appendFile(file_name, line, function(err) {
