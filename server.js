@@ -7,7 +7,6 @@ var cors = require('cors');
 var bodyParser = require('body-parser');
 var random = require('./utils').random;
 var Db = require('./db');
-var fs = require('fs');
 var exec = require('child_process').exec;
 
 var app = express();
