@@ -264,11 +264,13 @@ app.get('/path', function tsp(req, res) {
       var out = JSON.parse(stdout.toString());
       res.send({
         type: 'Feature',
-        properties: 'path',
+        properties: {
+          type: 'path'
+        },
         geometry: {
           type: 'LineString',
           coordinates: out.nodes.slice(1, 3).map(function(coords) {
-            return [coords.lon, coords.lat];
+            return [+coords.lon, +coords.lat];
           })
         }
       });
