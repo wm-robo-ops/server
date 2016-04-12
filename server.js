@@ -5,7 +5,6 @@ var express = require('express');
 var net = require('net');
 var cors = require('cors');
 var bodyParser = require('body-parser');
-var random = require('./utils').random;
 var Db = require('./db');
 var exec = require('child_process').exec;
 
@@ -27,6 +26,7 @@ if (!fs.existsSync(photosDir)) {
 
 var STATS_SERVER_PORT = '5555';
 var PHOTO_STREAM_PORT = '7000';
+var GPS_STREAM_PORT = 4000;
 
 var MOUNT_KOSMO_LAT = '-95.081505';
 var MOUNT_KOSMO_LON = '29.564962';
@@ -34,7 +34,6 @@ var MOUNT_KOSMO_LON = '29.564962';
 var BIG_DADDY = 'bigDaddy';
 var SCOUT = 'scout';
 var FLYER = 'flyer';
-var vehicles = [BIG_DADDY, SCOUT, FLYER];
 
 var deviceIds = {
   camera: {
@@ -45,12 +44,12 @@ var deviceIds = {
     flyer: '192.168.1.000'
   },
   gps: {
-    bigDaddy: '192.168.1.000',
+    bigDaddy: '192.168.1.133',
     scout: '192.168.1.000',
     flyer: '192.168.1.000'
   },
   dof: {
-    bigDaddy: '192.168.1.00',
+    bigDaddy: '192.168.1.000',
     scout: '192.168.1.000',
     flyer: '192.168.1.000'
   }
@@ -74,21 +73,27 @@ var dofDevice = {
   flyer: { on: false, port: 3003, name: 'flyer' }
 };
 
-var center = [-95.081320, 29.564835];
-
 app.get('/', function(req, res) {
   res.send('sup ;)');
 });
 
 var location = {};
 
+// sample location every 30 seconds
 setInterval(function() {
-  if (!(location.bigDaddy && location.scout && location.flyer)) return;
-  bigDaddyTrace.push(location.bigDaddy);
-  scoutTrace.push(location.scout);
-  flyerTrace.push(location.flyer);
+  if (location.bigDaddy) {
+    bigDaddyTrace.push(location.bigDaddy);
+  }
+  if (location.scout) {
+    scoutTrace.push(location.scout);
+  }
+  if (location.flyer) {
+    flyerTrace.push(location.flyer);
+  }
+  fs.writeFileSync('./trace.geojson', JSON.stringify(getTraceGeoj()));
 }, 30000);
 
+// delete trace every 1 hour - REMEMBER TO REMOVE
 setInterval(function() {
   bigDaddyTrace.length = 0;
   scoutTrace.length = 0;
@@ -99,10 +104,32 @@ var bigDaddyTrace = [];
 var scoutTrace = [];
 var flyerTrace = [];
 
-var locationGeoj = {
-  type: 'FeatureCollection',
-  features: [
-    {
+// read in cached trace data
+try {
+  var traceCache = JSON.parse(fs.readFileSync('./trace.geojson'));
+  if (traceCache.features.some(function(f) { return f.properties.vehicle === 'bigDaddy'; })) {
+    bigDaddyTrace = traceCache.features.filter(function(f) { return f.properties.vehicle === 'bigDaddy'; })[0].geometry.coordinates;
+  }
+  if (traceCache.features.some(function(f) { return f.properties.vehicle === 'scout'; })) {
+    scoutTrace = traceCache.features.filter(function(f) { return f.properties.vehicle === 'scout'; })[0].geometry.coordinates;
+  }
+  if (traceCache.features.some(function(f) { return f.properties.vehicle === 'flyer'; })) {
+    flyerTrace = traceCache.features.filter(function(f) { return f.properties.vehicle === 'flyer'; })[0].geometry.coordinates;
+  }
+} catch (e) {
+  console.log('SETUP: trace.geojson does not exist yet');
+  console.log('---------------------------------------');
+}
+
+var emptyGeoj = { type: 'FeatureCollection', features: [] };
+
+function getLocationGeoj() {
+  var locationGeoj = {
+    type: 'FeatureCollection',
+    features: []
+  };
+  if (location.bigDaddy) {
+    locationGeoj.features.push({
       type: 'Feature',
       properties: {
         name: 'bigDaddy',
@@ -112,8 +139,10 @@ var locationGeoj = {
         type: 'Point',
         coordinates: location.bigDaddy
       }
-    },
-    {
+    });
+  }
+  if (location.scout) {
+    locationGeoj.features.push({
       type: 'Feature',
       properties: {
         name: 'scout',
@@ -123,8 +152,10 @@ var locationGeoj = {
         type: 'Point',
         coordinates: location.scout
       }
-    },
-    {
+    });
+  }
+  if (location.flyer) {
+    locationGeoj.features.push({
       type: 'Feature',
       properties: {
         name: 'flyer',
@@ -134,14 +165,18 @@ var locationGeoj = {
         type: 'Point',
         coordinates: location.flyer
       }
-    }
-  ]
-};
+    });
+  }
+  return locationGeoj;
+}
 
-var trace = {
-  type: 'FeatureCollection',
-  features: [
-    {
+function getTraceGeoj() {
+  var trace = {
+    type: 'FeatureCollection',
+    features: []
+  };
+  if (bigDaddyTrace.length) {
+    trace.features.push({
       type: 'Feature',
       properties: {
         vehicle: 'bigDaddy'
@@ -150,8 +185,10 @@ var trace = {
         type: 'LineString',
         coordinates: bigDaddyTrace
       }
-    },
-    {
+    });
+  }
+  if (scoutTrace.length) {
+    trace.features.push({
       type: 'Feature',
       properties: {
         vehicle: 'scout'
@@ -160,8 +197,10 @@ var trace = {
         type: 'LineString',
         coordinates: scoutTrace
       }
-    },
-    {
+    });
+  }
+  if (flyerTrace.length) {
+    trace.features.push({
       type: 'Feature',
       properties: {
         vehicle: 'flyer'
@@ -170,40 +209,32 @@ var trace = {
         type: 'LineString',
         coordinates: flyerTrace
       }
-    }
-  ]
-};
+    });
+  }
+  return trace;
+}
 
+// location of vehicles
 app.get('/location', function loc(req, res) {
-  locationGeoj.features[0].geometry.coordinates = location.bigDaddy || [0, 0];
-  locationGeoj.features[1].geometry.coordinates = location.scout || [0, 0];
-  locationGeoj.features[2].geometry.coordinates = location.flyer || [0, 0];
-  res.send(locationGeoj);
+  res.send(getLocationGeoj());
 });
 
+// trace data
 app.get('/trace', function tr(req, res) {
-  res.send(trace);
+  res.send(getTraceGeoj());
 });
 
+// vehicle device information
 app.get('/stats', function stats(req, res) {
   var resData = {
     cameras: cameras,
     gps: gps,
     dofDevice: dofDevice
   };
-  resData.vehicles = vehicles.reduce(function(p, c) {
-    location[c] = [
-      random(center[0] - 0.0004, center[0] + 0.0004),
-      random(center[1] - 0.0004, center[1] + 0.0004)
-    ];
-    p[c] = {
-      location: location[c]
-    };
-    return p;
-  }, {});
   res.send(resData);
 });
 
+// get rocks
 app.get('/rocks', function rocks(req, res) {
   DB.getRocks(function dbRocksGet(e, data) {
     if (e) {
@@ -215,6 +246,7 @@ app.get('/rocks', function rocks(req, res) {
   });
 });
 
+// get rock geojson data
 app.get('/rocks/geojson', function rocksGeoj(req, res) {
   DB.getRocks(function dbRocksGet(e, data) {
     if (e) {
@@ -241,6 +273,7 @@ app.get('/rocks/geojson', function rocksGeoj(req, res) {
   });
 });
 
+// run TSP and return optimal path between rocks as geojson
 app.get('/path', function tsp(req, res) {
   DB.getRocks(function dbRocksGet(e, data) {
     if (e) {
@@ -248,9 +281,8 @@ app.get('/path', function tsp(req, res) {
       return res.status(500).send(e);
     }
     var fileName = path.join(__dirname, '/nodes.txt');
-    location.bigDaddy = [0, 0];
-    if (!location.bigDaddy) {
-      return res.send('No data');
+    if (!location.bigDaddy || data.length === 0) {
+      return res.send(emptyGeoj);
     }
     var initNodes = MOUNT_KOSMO_LAT + ':' + MOUNT_KOSMO_LON + ':' + 'kosmo\n';
     initNodes += location.bigDaddy[1].toString() + ':' + location.bigDaddy[0].toString() + ':' + 'bigDaddy\n';
@@ -269,7 +301,7 @@ app.get('/path', function tsp(req, res) {
         },
         geometry: {
           type: 'LineString',
-          coordinates: out.nodes.slice(1, 3).map(function(coords) {
+          coordinates: out.nodes.slice(1, out.nodes.length - 1).map(function(coords) {
             return [+coords.lon, +coords.lat];
           })
         }
@@ -278,6 +310,7 @@ app.get('/path', function tsp(req, res) {
   });
 });
 
+// add a new rock
 app.post('/rocks/add', function rocksAdd(req, res) {
   DB.addRock(req.body, function dbRocksRemove(e) {
     if (e) {
@@ -289,6 +322,7 @@ app.post('/rocks/add', function rocksAdd(req, res) {
   });
 });
 
+// remove a rock
 app.delete('/rocks/remove/:id', function rocksRemove(req, res) {
   DB.removeRock(req.params.id, function dbRocksRemove(e) {
     if (e) {
@@ -300,6 +334,7 @@ app.delete('/rocks/remove/:id', function rocksRemove(req, res) {
   });
 });
 
+// toggle video streams
 app.post('/video/:stream/:status', function toggleVideo(req, res) {
   var stream = req.params.stream,
       status = req.params.status;
@@ -320,6 +355,7 @@ app.post('/video/:stream/:status', function toggleVideo(req, res) {
   }
 });
 
+// change video frame rate
 app.post('/video/framerate/:camera/:frameRate', function changeFrameRate(req, res) {
   var camera = req.params.camera,
       frameRate = req.params.frameRate;
@@ -334,6 +370,7 @@ app.post('/video/framerate/:camera/:frameRate', function changeFrameRate(req, re
   }
 });
 
+// toggle dof device
 app.post('/dofdevice/:vehicle/:status', function gpsToggle(req, res) {
   var vehicle = req.params.vehicle,
       status = req.params.status;
@@ -352,6 +389,7 @@ app.post('/dofdevice/:vehicle/:status', function gpsToggle(req, res) {
   else res.status(500).send('ERROR: Could not toggle DOF device - ' + vehicle);
 });
 
+// toggle gps device
 app.post('/gps/:vehicle/:on', function gpsToggle(req, res) {
   console.log('WEB:');
   var vehicle = req.params.vehicle,
@@ -372,11 +410,13 @@ app.post('/gps/:vehicle/:on', function gpsToggle(req, res) {
     res.status(500).send('ERROR: Could not toggle GPS device - ' + vehicle);
 });
 
-app.post('/photo/:name', function capturePhoto(req, res) {
-  var name = req.params.name;
+// capture a photo
+app.post('/photo/:camera/:name', function capturePhoto(req, res) {
+  var name = req.params.name,
+      camera = req.params.camera;
   console.log('Command: capture photo -', name);
   picName = name;
-  piCommandServer.sendCommand('START:CAPTURE_PHOTO:' + name + '|', '192.168.1.133');
+  piCommandServer.sendCommand('START:CAPTURE_PHOTO:' + name + '|', deviceIds.camera[camera]);
   res.send('ok');
 });
 
@@ -457,6 +497,56 @@ PiCommandServer.prototype.sendCommand = function(command, device) {
   }
   return true;
 };
+
+/************************************************************************************
+ * gps stream server
+ */
+var piGPSStreamServer = net.createServer(function(socket) {
+  socket.setEncoding('utf8');
+  socket.nameSet = false;
+  socket.name = '';
+  socket.on('error', function onError(error) { console.log('Pi GPS stream socket error:', error); });
+  socket.on('connect', function onConnect() { console.log('GPS: new Pi connected'); });
+  socket.on('data', function onData(chunk) {
+    if (!socket.nameSet) {
+      chunk = chunk.split('~');
+      socket.name = chunk[0];
+      if (chunk.length > 1) {
+        socket.nameSet = true;
+        console.log('New Pi id:', socket.name);
+        chunk.shift();
+        chunk = chunk.join();
+      } else {
+        return;
+      }
+    }
+    chunk = chunk.split('|');
+    if (chunk.length > 1) {
+      try {
+        setGPS(socket.name, JSON.parse(chunk[0]));
+      } catch (e) {
+        return;
+      }
+    }
+  });
+});
+piGPSStreamServer.listen(GPS_STREAM_PORT, function listen() {
+  console.log('PI - gps stream server port:', GPS_STREAM_PORT);
+});
+
+function setGPS(device, loc) {
+  switch (device) {
+  case deviceIds.gps.bigDaddy:
+    location.bigDaddy = [loc.lon, loc.lat];
+    return;
+  case deviceIds.gps.scout:
+    location.scout = [loc.lon, loc.lat];
+    return;
+  case deviceIds.gps.flyer:
+    location.flyer = [loc.on, loc.lat];
+    return;
+  }
+}
 
 /************************************************************************************
  * photo stream server
