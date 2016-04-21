@@ -44,7 +44,7 @@ var deviceIds = {
     flyer: '192.168.1.000'
   },
   gps: {
-    bigDaddy: '192.168.1.133',
+    bigDaddy: '192.168.1.134',
     scout: '192.168.1.000',
     flyer: '192.168.1.000'
   },
@@ -56,11 +56,46 @@ var deviceIds = {
 };
 
 var cameras = {
-  bigDaddyMain: { vehicle: BIG_DADDY, on: false, ip: '', nameReadable: 'Big Daddy Main', frameRate: 30, port: 8001 },
-  bigDaddyMount1: { vehicle: BIG_DADDY, on: false, ip: '', nameReadable: 'Big Daddy Mount 1', frameRate: 30, port: 8002 },
-  bigDaddyArm: { vehicle: BIG_DADDY, on: false, ip: '', nameReadable: 'Big Daddy Arm', frameRate: 30, port: 8003 },
-  scout: { vehicle: SCOUT, on: false, ip: '', nameReadable: 'Scout Main', frameRate: 30, port: 8004 },
-  flyer: { vehicle: FLYER, on: false, ip: '', nameReadable: 'Flyer Main', frameRate: 30, port: 8005 }
+  bigDaddyMain: {
+    vehicle: BIG_DADDY,
+    on: false,
+    ip: '',
+    nameReadable: 'Big Daddy Main',
+    frameRate: 30,
+    port: 8001
+  },
+  bigDaddyMount1: {
+    vehicle: BIG_DADDY,
+    on: false,
+    ip: '',
+    nameReadable: 'Big Daddy Mount 1',
+    frameRate: 30,
+    port: 8002
+  },
+  bigDaddyArm: {
+    vehicle: BIG_DADDY,
+    on: false,
+    ip: '',
+    nameReadable: 'Big Daddy Arm',
+    frameRate: 30,
+    port: 8003
+  },
+  scout: {
+    vehicle: SCOUT,
+    on: false,
+    ip: '',
+    nameReadable: 'Scout Main',
+    frameRate: 30,
+    port: 8004
+  },
+  flyer: {
+    vehicle: FLYER,
+    on: false,
+    ip: '',
+    nameReadable: 'Flyer Main',
+    frameRate: 30,
+    port: 8005
+  }
 };
 var gps = {
   bigDaddy: { on: false, port: 4001, name: 'bigDaddy' },
@@ -390,13 +425,14 @@ app.post('/dofdevice/:vehicle/:status', function gpsToggle(req, res) {
 });
 
 // toggle gps device
-app.post('/gps/:vehicle/:on', function gpsToggle(req, res) {
+app.post('/gps/:vehicle/:status', function gpsToggle(req, res) {
   console.log('WEB:');
   var vehicle = req.params.vehicle,
       status = req.params.status;
   var ok;
   if (status === 'on') {
     console.log('Command: turn ON GPS -', vehicle);
+    console.log(deviceIds.gps[vehicle]);
     ok = piCommandServer.sendCommand(commands.START_GPS_STREAM, deviceIds.gps[vehicle]);
     if (ok) gps[vehicle].on = true;
   } else if (status === 'off') {
@@ -439,8 +475,8 @@ var commands = {
   STOP_VIDEO_STREAM: 'STOP:VIDEO_STREAM|',
   START_DIRECTION_STREAM: 'START:DIRECTION_STREAM|',
   STOP_DIRECTION_STREAM: 'STOP:DIRECTION_STREAM|',
-  START_GPS_STREAM: 'START:DIRECTION_STREAM|',
-  STOP_GPS_STREAM: 'START:GPS_STREAM|',
+  START_GPS_STREAM: 'START:GPS_STREAM|',
+  STOP_GPS_STREAM: 'STOP:GPS_STREAM|',
   PAN: 'START:PAN_TILT:5:5|'
 };
 
@@ -473,7 +509,7 @@ function PiCommandServer(port) {
       delete that.sockets[socket.name];
     });
   });
-  this.server.on('connection', function onConnection(/*s*/) {
+  this.server.on('connection', function onConnection() {
     console.log('New pi connected to command server');
   });
   this.server.listen(this.port, function() {
@@ -523,12 +559,18 @@ var piGPSStreamServer = net.createServer(function(socket) {
     chunk = chunk.split('|');
     if (chunk.length > 1) {
       try {
-        setGPS(socket.name, JSON.parse(chunk[0]));
+        var latLon = chunk[0].split(',').reduce(function(prev, curr) {
+          curr = curr.split(':');
+          prev[curr[0]] = +curr[1];
+          return prev;
+        }, {});
+        setGPS(socket.name, latLon);
       } catch (e) {
         return;
       }
     }
   });
+  socket.on('close', function onClose() { console.log('GPS socket closed:', socket.name); });
 });
 piGPSStreamServer.listen(GPS_STREAM_PORT, function listen() {
   console.log('PI - gps stream server port:', GPS_STREAM_PORT);
