@@ -24,7 +24,7 @@ if (!fs.existsSync(photosDir)) {
   fs.mkdirSync(photosDir);
 }
 
-var STATS_SERVER_PORT = '6000';
+var STATS_SERVER_PORT = '6020';
 var PHOTO_STREAM_PORT = '7000';
 var GPS_STREAM_PORT = 4000;
 
