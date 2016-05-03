@@ -2,6 +2,7 @@
 
 var net = require('net');
 var ws = require('ws');
+var cameras = require('./devices').cameras;
 
 var PI_STREAM_PORT = 8000,
     STREAM_MAGIC_BYTES = 'jsmp'; // Must be 4 bytes
@@ -9,13 +10,13 @@ var PI_STREAM_PORT = 8000,
 var width = 320,
     height = 240;
 
-var servers = {
-  '192.168.1.133': createWebSocketServer({ port: 8001 }),
-  '192.168.1.121': createWebSocketServer({ port: 8002 }),
-  '192.168.1.151': createWebSocketServer({ port: 8003 }),
-  '192.168.1.142': createWebSocketServer({ port: 8004 }),
-  flyer: createWebSocketServer({ port: 8005 })
-};
+var servers = Object.keys(cameras).reduce(function(out, key) {
+  var cam = cameras[key];
+  out[cam.device] = createWebSocketServer({ port: cam.port });
+  return out;
+}, {});
+
+
 function createWebSocketServer(opts) {
   var socketServer = new ws.Server({port: opts.port});
   socketServer.on('connection', function onConnection(socket) {
@@ -65,8 +66,14 @@ var streamServer = net.createServer(function(socket) {
           return;
         }
       }
-      servers[socket.name].broadcast(chunk, {binary: true});
+      try {
+        servers[socket.name].broadcast(chunk, {binary: true});
+      }
+      catch (e) {
+        console.log(e);
+      }
   });
 });
 streamServer.listen(PI_STREAM_PORT);
+console.log('Video server listening on port:', PI_STREAM_PORT);
 

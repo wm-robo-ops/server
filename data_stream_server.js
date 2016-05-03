@@ -53,7 +53,12 @@ function PiDataStreamServer(opts) {
         prev[curr[0]] = curr[1];
         return prev;
       }, {});
-      opts.clients[socket.name].broadcast(JSON.stringify(o));
+      try {
+        opts.clients[socket.name].broadcast(JSON.stringify(o));
+      }
+      catch (e) {
+        console.log(e);
+      }
     });
   });
   this.piDataStreamServer.on('connection', function onConnect() {

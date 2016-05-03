@@ -7,6 +7,7 @@ var cors = require('cors');
 var bodyParser = require('body-parser');
 var Db = require('./db');
 var exec = require('child_process').exec;
+var devices = require('./devices');
 
 var app = express();
 app.use(cors());
@@ -31,82 +32,24 @@ var GPS_STREAM_PORT = 4000;
 var MOUNT_KOSMO_LAT = '-95.081505';
 var MOUNT_KOSMO_LON = '29.564962';
 
-var BIG_DADDY = 'bigDaddy';
-var SCOUT = 'scout';
-var FLYER = 'flyer';
+var cameras = Object.keys(devices.cameras).reduce(function(out, key) {
+  out[key] = devices.cameras[key];
+  out[key].on = true;
+  out[key].frameRate = 0;
+  return out;
+}, {});
 
-var deviceIds = {
-  camera: {
-    bigDaddyMain: '192.168.1.133',
-    bigDaddyMount1: '192.168.1.121',
-    bigDaddyArm: '192.168.1.151',
-    scout: '192.168.1.142',
-    flyer: '192.168.1.000'
-  },
-  gps: {
-    bigDaddy: '192.168.1.134',
-    scout: '192.168.1.000',
-    flyer: '192.168.1.000'
-  },
-  dof: {
-    bigDaddy: '192.168.1.000',
-    scout: '192.168.1.000',
-    flyer: '192.168.1.000'
-  }
-};
+var gps = Object.keys(devices.gps).reduce(function(out, key) {
+  out[key] = devices.gps[key];
+  out[key].on = true;
+  return out;
+}, {});
 
-var cameras = {
-  bigDaddyMain: {
-    vehicle: BIG_DADDY,
-    on: false,
-    ip: '',
-    nameReadable: 'Big Daddy Main',
-    frameRate: 30,
-    port: 8001
-  },
-  bigDaddyMount1: {
-    vehicle: BIG_DADDY,
-    on: false,
-    ip: '',
-    nameReadable: 'Big Daddy Mount 1',
-    frameRate: 30,
-    port: 8002
-  },
-  bigDaddyArm: {
-    vehicle: BIG_DADDY,
-    on: false,
-    ip: '',
-    nameReadable: 'Big Daddy Arm',
-    frameRate: 30,
-    port: 8003
-  },
-  scout: {
-    vehicle: SCOUT,
-    on: false,
-    ip: '',
-    nameReadable: 'Scout Main',
-    frameRate: 30,
-    port: 8004
-  },
-  flyer: {
-    vehicle: FLYER,
-    on: false,
-    ip: '',
-    nameReadable: 'Flyer Main',
-    frameRate: 30,
-    port: 8005
-  }
-};
-var gps = {
-  bigDaddy: { on: false, port: 4001, name: 'bigDaddy' },
-  scout: { on: false, port: 4002, name: 'scout' },
-  flyer: { on: false, port: 4003, name: 'flyer' }
-};
-var dofDevice = {
-  bigDaddy: { on: false, port: 3001, name: 'bigDaddy' },
-  scout: { on: false, port: 3002, name: 'scout' },
-  flyer: { on: false, port: 3003, name: 'flyer' }
-};
+var dofDevice = Object.keys(devices.dof).reduce(function(out, key) {
+  out[key] = devices.dof[key];
+  out[key].on = true;
+  return out;
+}, {});
 
 app.get('/', function(req, res) {
   res.send('sup ;)');
@@ -143,13 +86,22 @@ var flyerTrace = [];
 try {
   var traceCache = JSON.parse(fs.readFileSync('./trace.geojson'));
   if (traceCache.features.some(function(f) { return f.properties.vehicle === 'bigDaddy'; })) {
-    bigDaddyTrace = traceCache.features.filter(function(f) { return f.properties.vehicle === 'bigDaddy'; })[0].geometry.coordinates;
+    bigDaddyTrace = traceCache.features
+      .filter(function(f) {
+        return f.properties.vehicle === 'bigDaddy';
+      })[0].geometry.coordinates;
   }
   if (traceCache.features.some(function(f) { return f.properties.vehicle === 'scout'; })) {
-    scoutTrace = traceCache.features.filter(function(f) { return f.properties.vehicle === 'scout'; })[0].geometry.coordinates;
+    scoutTrace = traceCache.features
+      .filter(function(f) {
+        return f.properties.vehicle === 'scout';
+      })[0].geometry.coordinates;
   }
   if (traceCache.features.some(function(f) { return f.properties.vehicle === 'flyer'; })) {
-    flyerTrace = traceCache.features.filter(function(f) { return f.properties.vehicle === 'flyer'; })[0].geometry.coordinates;
+    flyerTrace = traceCache.features
+      .filter(function(f) {
+        return f.properties.vehicle === 'flyer';
+      })[0].geometry.coordinates;
   }
 } catch (e) {
   console.log('SETUP: trace.geojson does not exist yet');
@@ -376,11 +328,11 @@ app.post('/video/:stream/:status', function toggleVideo(req, res) {
   var ok;
   if (status === 'on') {
     console.log('Command: turn ON video -', stream);
-    ok = piCommandServer.sendCommand(commands.START_VIDEO_STREAM(30), deviceIds.camera[stream]);
+    ok = piCommandServer.sendCommand(commands.START_VIDEO_STREAM(30), devices.cameras[stream].device);
     if (ok) cameras[stream].on = true;
   } else if (status === 'off') {
     console.log('Command: turn OFF video -', stream);
-    ok = piCommandServer.sendCommand(commands.STOP_VIDEO_STREAM, deviceIds.camera[stream]);
+    ok = piCommandServer.sendCommand(commands.STOP_VIDEO_STREAM, devices.cameras[stream].device);
     if (ok) cameras[stream].on = false;
   }
   if (ok) {
@@ -395,8 +347,8 @@ app.post('/video/framerate/:camera/:frameRate', function changeFrameRate(req, re
   var camera = req.params.camera,
       frameRate = req.params.frameRate;
   console.log('Command: change', camera, 'framerate to', frameRate);
-  var stop = piCommandServer.sendCommand(commands.STOP_VIDEO_STREAM, deviceIds.camera[camera]);
-  var start = piCommandServer.sendCommand(commands.START_VIDEO_STREAM(frameRate), deviceIds.camera[camera]);
+  var stop = piCommandServer.sendCommand(commands.STOP_VIDEO_STREAM, devices.cameras[camera].device);
+  var start = piCommandServer.sendCommand(commands.START_VIDEO_STREAM(frameRate), devices.camera[camera].device);
   if (stop && start) {
     cameras[camera].frameRate = frameRate;
     res.send('ok');
@@ -412,11 +364,11 @@ app.post('/dofdevice/:vehicle/:status', function gpsToggle(req, res) {
   var ok;
   if (status === 'on') {
     console.log('Command: turn ON dof device - ', vehicle);
-    ok = piCommandServer.sendCommand(commands.START_DIRECTION_STREAM, deviceIds.dof[vehicle]);
+    ok = piCommandServer.sendCommand(commands.START_DIRECTION_STREAM, devices.dof[vehicle].device);
     if (ok) dofDevice[vehicle].on = true;
   } else if (status === 'off') {
     console.log('Command: turn OFF dof device - ', vehicle);
-    ok = piCommandServer.sendCommand(commands.STOP_DIRECTION_STREAM, deviceIds.dof[vehicle]);
+    ok = piCommandServer.sendCommand(commands.STOP_DIRECTION_STREAM, devices.dof[vehicle].device);
     if (ok) dofDevice[vehicle].on = false;
   }
   if (ok)
@@ -432,12 +384,11 @@ app.post('/gps/:vehicle/:status', function gpsToggle(req, res) {
   var ok;
   if (status === 'on') {
     console.log('Command: turn ON GPS -', vehicle);
-    console.log(deviceIds.gps[vehicle]);
-    ok = piCommandServer.sendCommand(commands.START_GPS_STREAM, deviceIds.gps[vehicle]);
+    ok = piCommandServer.sendCommand(commands.START_GPS_STREAM, devices.gps[vehicle].device);
     if (ok) gps[vehicle].on = true;
   } else if (status === 'off') {
     console.log('Command: turn OFF GPS -', vehicle);
-    ok = piCommandServer.sendCommand(commands.STOP_GPS_STREAM, deviceIds.gps[vehicle]);
+    ok = piCommandServer.sendCommand(commands.STOP_GPS_STREAM, devices.gps[vehicle].device);
     if (ok) gps[vehicle].on = false;
   }
   if (ok)
@@ -452,7 +403,7 @@ app.post('/photo/:camera/:name', function capturePhoto(req, res) {
       camera = req.params.camera;
   console.log('Command: capture photo -', name);
   picName = name;
-  piCommandServer.sendCommand('START:CAPTURE_PHOTO:' + name + '|', deviceIds.camera[camera]);
+  piCommandServer.sendCommand('START:CAPTURE_PHOTO:' + name + '|', devices.cameras[camera].device);
   res.send('ok');
 });
 
@@ -578,13 +529,14 @@ piGPSStreamServer.listen(GPS_STREAM_PORT, function listen() {
 
 function setGPS(device, loc) {
   switch (device) {
-  case deviceIds.gps.bigDaddy:
+  //case deviceIds.gps.bigDaddy:
+  case devices.gps.bigDaddy.device:
     location.bigDaddy = [loc.lon, loc.lat];
     return;
-  case deviceIds.gps.scout:
+  case devices.gps.scout.device:
     location.scout = [loc.lon, loc.lat];
     return;
-  case deviceIds.gps.flyer:
+  case devices.gps.flyer.device:
     location.flyer = [loc.on, loc.lat];
     return;
   }
