@@ -34,20 +34,20 @@ var MOUNT_KOSMO_LON = '29.564962';
 
 var cameras = Object.keys(devices.cameras).reduce(function(out, key) {
   out[key] = devices.cameras[key];
-  out[key].on = true;
+  out[key].on = false;
   out[key].frameRate = 0;
   return out;
 }, {});
 
 var gps = Object.keys(devices.gps).reduce(function(out, key) {
   out[key] = devices.gps[key];
-  out[key].on = true;
+  out[key].on = false;
   return out;
 }, {});
 
 var dofDevice = Object.keys(devices.dof).reduce(function(out, key) {
   out[key] = devices.dof[key];
-  out[key].on = true;
+  out[key].on = false;
   return out;
 }, {});
 
