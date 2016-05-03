@@ -347,11 +347,8 @@ app.post('/video/framerate/:camera/:frameRate', function changeFrameRate(req, re
   var camera = req.params.camera,
       frameRate = req.params.frameRate;
   console.log('Command: change', camera, 'framerate to', frameRate);
-  if (!(camera in devices.cameras)) {
-    res.status(500).send('ERROR: device not connected to server:', camera);
-  }
   var stop = piCommandServer.sendCommand(commands.STOP_VIDEO_STREAM, devices.cameras[camera].device);
-  var start = piCommandServer.sendCommand(commands.START_VIDEO_STREAM(frameRate), devices.camera[camera].device);
+  var start = piCommandServer.sendCommand(commands.START_VIDEO_STREAM(frameRate), devices.cameras[camera].device);
   if (stop && start) {
     cameras[camera].frameRate = frameRate;
     res.send('ok');
