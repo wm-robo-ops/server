@@ -46,7 +46,7 @@ module.exports = {
   },
   dof: {
     bigDaddy: {
-      device: '192.168.1.133',
+      device: '192.168.1.142',
       port: 3001,
       name: 'bigDaddy'
     },
