@@ -529,15 +529,14 @@ piGPSStreamServer.listen(GPS_STREAM_PORT, function listen() {
 
 function setGPS(device, loc) {
   switch (device) {
-  //case deviceIds.gps.bigDaddy:
   case devices.gps.bigDaddy.device:
-    location.bigDaddy = [loc.lon, loc.lat];
+    location.bigDaddy = [ loc.lon || location.bigDaddy[0], loc.lat || location.bigDaddy[1] ];
     return;
   case devices.gps.scout.device:
-    location.scout = [loc.lon, loc.lat];
+    location.scout = [ loc.lon || location.scout[0], loc.lat || location.scout[1] ];
     return;
   case devices.gps.flyer.device:
-    location.flyer = [loc.on, loc.lat];
+    location.flyer= [ loc.lon || location.flyer[0], loc.lat || location.flyer[1] ];
     return;
   }
 }
