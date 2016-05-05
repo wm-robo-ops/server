@@ -216,7 +216,8 @@ app.get('/stats', function stats(req, res) {
   var resData = {
     cameras: cameras,
     gps: gps,
-    dofDevice: dofDevice
+    dofDevice: dofDevice,
+    vehicleGeoJSON: getLocationGeoj()
   };
   res.send(resData);
 });
@@ -536,7 +537,7 @@ function setGPS(device, loc) {
     location.scout = [ loc.lon || location.scout[0], loc.lat || location.scout[1] ];
     return;
   case devices.gps.flyer.device:
-    location.flyer= [ loc.lon || location.flyer[0], loc.lat || location.flyer[1] ];
+    location.flyer = [ loc.lon || location.flyer[0], loc.lat || location.flyer[1] ];
     return;
   }
 }

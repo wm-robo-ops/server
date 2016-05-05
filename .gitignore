@@ -5,3 +5,4 @@ photos/
 nodes.txt
 TSP
 *.geojson
+*.log
