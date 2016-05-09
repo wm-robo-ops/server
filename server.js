@@ -264,7 +264,6 @@ app.get('/rocks/geojson', function rocksGeoj(req, res) {
 
 var startTime = false;
 app.post('/start_time/set/:time', function setStartTime(req, res) {
-  console.log(req.params.time);
   startTime = req.params.time;
   res.send('ok');
 });
