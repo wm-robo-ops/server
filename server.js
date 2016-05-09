@@ -217,7 +217,8 @@ app.get('/stats', function stats(req, res) {
     cameras: cameras,
     gps: gps,
     dofDevice: dofDevice,
-    vehicleGeoJSON: getLocationGeoj()
+    vehicleGeoJSON: getLocationGeoj(),
+    startTime: startTime
   };
   res.send(resData);
 });
@@ -259,6 +260,17 @@ app.get('/rocks/geojson', function rocksGeoj(req, res) {
       });
     }
   });
+});
+
+var startTime = false;
+app.post('/start_time/set/:time', function setStartTime(req, res) {
+  console.log(req.params.time);
+  startTime = req.params.time;
+  res.send('ok');
+});
+
+app.get('/start_time', function getStartTime(req, res) {
+  res.send(startTime);
 });
 
 // run TSP and return optimal path between rocks as geojson

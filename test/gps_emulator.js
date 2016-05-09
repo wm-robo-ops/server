@@ -1,8 +1,8 @@
 var net = require('net');
 var random = require('../utils').random;
 
-var HOST = 'localhost';
-//var HOST = 'ec2-54-83-155-188.compute-1.amazonaws.com';
+//var HOST = 'localhost';
+var HOST = 'ec2-54-83-155-188.compute-1.amazonaws.com';
 var PORT = 4000;
 
 var client = new net.Socket();
