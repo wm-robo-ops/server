@@ -13,17 +13,17 @@ module.exports = {
       vehicle: vehicles.BIG_DADDY,
       nameReadable: 'Big Daddy Front'
     },
-    bdright: {
-      device: '192.168.1.121',
-      port: 8002,
-      vehicle: vehicles.BIG_DADDY,
-      nameReadable: 'Big Daddy Right'
-    },
     bdback: {
       device: '192.168.1.151',
       port: 8003,
       vehicle: vehicles.BIG_DADDY,
       nameReadable: 'Big Daddy Back'
+    },
+    bdright: {
+      device: '192.168.1.121',
+      port: 8002,
+      vehicle: vehicles.BIG_DADDY,
+      nameReadable: 'Big Daddy Right'
     },
     bdleft: {
       device: '192.168.1.142',
