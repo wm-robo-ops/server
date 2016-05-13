@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 var ws = require('ws');
 var net = require('net');
+var log = require('./utils').log;
 
 module.exports = {
   createDataStreamWebServer: createDataStreamWebServer,
@@ -26,7 +27,14 @@ function PiDataStreamServer(opts) {
     socket.nameSet = false;
     socket.name = '';
     socket.setEncoding('utf8');
-    socket.on('error', function onError() { console.log('Pi data stream socket error'); });
+    socket.on('error', function onError() { 
+      log('Pi data stream socket error -> ' + socket.name); 
+      socket.destroy();
+    });
+    socket.on('close', function onClose() {
+      log('Pi data stream socket closed -> ' + socket.name);
+      socket.destroy();
+    });
     socket.on('data', function onData(chunk) {
       if (!socket.nameSet) {
         chunk = chunk.split('~');
@@ -34,7 +42,7 @@ function PiDataStreamServer(opts) {
         if (chunk.length > 1) {
           that.piSockets[socket.name] = socket;
           socket.nameSet = true;
-          console.log('New Pi id:', socket.name);
+          log('New Pi id: ' + socket.name);
           chunk.shift();
           chunk = chunk.join();
         } else {
@@ -51,15 +59,15 @@ function PiDataStreamServer(opts) {
         opts.clients[socket.name].broadcast(JSON.stringify(o));
       }
       catch (e) {
-        console.log(e);
+        log(e);
       }
     });
   });
   this.piDataStreamServer.on('connection', function onConnect() {
-    console.log('New Pi connected to', opts.name, 'data stream server');
+    log('New Pi connected to ' + opts.name + ' server');
   });
   this.piDataStreamServer.listen(opts.port, function() {
-    console.log(opts.name, 'data stream server listening on port:', opts.port);
+    log(opts.name + ' data stream server listening on port: ' + opts.port);
     console.log('------------------------------------');
   });
 }
