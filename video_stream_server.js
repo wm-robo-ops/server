@@ -3,6 +3,7 @@
 var net = require('net');
 var ws = require('ws');
 var cameras = require('./devices').cameras;
+var log = require('./utils').log;
 
 var PI_STREAM_PORT = 8000,
     STREAM_MAGIC_BYTES = 'jsmp'; // Must be 4 bytes
@@ -65,9 +66,16 @@ var streamServer = net.createServer(function(socket) {
         console.log(e);
       }
   });
+  socket.on('close', function onClose() {
+    log('SOCKET CLOSE - video socket closed -> ' + socket.name);
+    socket.destroy();
+  });
+  socket.on('error', function() {
+    log('ERROR - video socket error with -> ' + socket.name);
+    socket.destroy();
+  })
 });
 streamServer.listen(PI_STREAM_PORT, function() {
   console.log('Video server listening on port:', PI_STREAM_PORT);
   console.log('------------------------------------')
 });
-
