@@ -32,7 +32,7 @@ module.exports = {
       nameReadable: 'Big Daddy Right'
     },
     arm: {
-      device: '192.168.1.201',
+      device: '192.168.1.92',
       port: 8005,
       vehicle: vehicles.BIG_DADDY,
       nameReadable: 'Arm'
