@@ -6,3 +6,4 @@ nodes.txt
 TSP
 *.geojson
 *.log
+node_modules/

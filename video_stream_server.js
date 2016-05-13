@@ -27,12 +27,6 @@ function createWebSocketServer(opts) {
     streamHeader.writeUInt16BE(width, 4);
     streamHeader.writeUInt16BE(height, 6);
     socket.send(streamHeader, {binary: true});
-
-    console.log('New WebSocket Connection (' + socketServer.clients.length + ' total)');
-
-    socket.on('close', function onClose(/*code, message*/) {
-      console.log('Disconnected WebSocket (' + socketServer.clients.length + ' total)');
-    });
   });
 
   socketServer.broadcast = function(data, o) {
@@ -76,4 +70,5 @@ var streamServer = net.createServer(function(socket) {
 });
 streamServer.listen(PI_STREAM_PORT);
 console.log('Video server listening on port:', PI_STREAM_PORT);
+console.log('------------------------------------')
 
