@@ -33,9 +33,7 @@ function createWebSocketServer(opts) {
     for(var i in this.clients) {
       if (this.clients[i].readyState === 1) {
         this.clients[i].send(data, o);
-      } else {
-        console.log('Error: Client (' + i + ') not connected.');
-      }
+      }    
     }
   };
   return socketServer;
@@ -52,7 +50,7 @@ var streamServer = net.createServer(function(socket) {
         if (chunk.length > 1) {
           that.piSockets[socket.name] = socket;
           socket.nameSet = true;
-          console.log('New Pi id:', socket.name);
+          log('New Pi id: ' + socket.name);
           chunk.shift();
           chunk = chunk.join();
         } else {
@@ -63,7 +61,7 @@ var streamServer = net.createServer(function(socket) {
         servers[socket.name].broadcast(chunk, {binary: true});
       }
       catch (e) {
-        console.log(e);
+        log(e);
       }
   });
   socket.on('close', function onClose() {
