@@ -16,7 +16,6 @@ var servers = Object.keys(cameras).reduce(function(out, key) {
   return out;
 }, {});
 
-
 function createWebSocketServer(opts) {
   var socketServer = new ws.Server({port: opts.port});
   socketServer.on('connection', function onConnection(socket) {
@@ -45,7 +44,6 @@ function createWebSocketServer(opts) {
 var streamServer = net.createServer(function(socket) {
   this.piSockets = {};
   var that = this;
-  console.log('Stream connected');
   socket.on('data', function onData(chunk) {
       if (!socket.nameSet) {
         chunk = chunk.toString('utf8').split('~');
@@ -68,7 +66,8 @@ var streamServer = net.createServer(function(socket) {
       }
   });
 });
-streamServer.listen(PI_STREAM_PORT);
-console.log('Video server listening on port:', PI_STREAM_PORT);
-console.log('------------------------------------')
+streamServer.listen(PI_STREAM_PORT, function() {
+  console.log('Video server listening on port:', PI_STREAM_PORT);
+  console.log('------------------------------------')
+});
 

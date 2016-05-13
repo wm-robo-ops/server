@@ -9,12 +9,6 @@ module.exports = {
 
 function createDataStreamWebServer(opts) {
   var webDataStreamServer = new ws.Server({port: opts.port});
-  webDataStreamServer.on('connection', function onConnection(socket) {
-    console.log('New client connected to:', opts.name);
-    socket.on('close', function onClose() {
-      console.log('web client disconnected');
-    });
-  });
   webDataStreamServer.broadcast = function broadcast(data) {
     for (var i in this.clients) {
       if (this.clients[i].readyState === 1) {
