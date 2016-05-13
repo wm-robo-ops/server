@@ -14,7 +14,9 @@ DB.prototype.getRocks = function(cb) {
 };
 
 DB.prototype.addRock = function(data, cb) {
-  var cmd = 'INSERT into rocks VALUES (' +
+  var cmd = 'INSERT into rocks ' +
+      '(id, lon, lat, color) ' +
+      'VALUES (' +
       '\'' + data.id + '\', ' +
       ' ' + data.lon + ', ' +
       ' ' + data.lat + ', ' +

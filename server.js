@@ -250,7 +250,8 @@ app.get('/rocks/geojson', function rocksGeoj(req, res) {
             type: 'Feature',
             properties: {
               color: rock.color,
-              id: rock.id
+              id: rock.id,
+              name: rock.name
             },
             geometry: {
               type: 'Point',
@@ -315,7 +316,7 @@ app.post('/rocks/add', function rocksAdd(req, res) {
   DB.addRock(req.body, function dbRocksRemove(e) {
     if (e) {
       log(e);
-      res.status(500).send();
+      res.status(500).send(e);
     } else {
       res.send('ok');
     }
@@ -327,7 +328,7 @@ app.delete('/rocks/remove/:id', function rocksRemove(req, res) {
   DB.removeRock(req.params.id, function dbRocksRemove(e) {
     if (e) {
       log(e);
-      res.status(500).send();
+      res.status(500).send(e);
     } else {
       res.send('ok');
     }
@@ -455,8 +456,8 @@ function PiCommandServer(port) {
     socket.nameSet = false;
     socket.name = '';
     socket.setEncoding('utf8');
-    socket.on('error', function onError(error) { 
-      log('Socket Error: ' + error); 
+    socket.on('error', function onError(error) {
+      log('Socket Error: ' + error);
       socket.destroy();
     });
     socket.on('data', function onData(chunk) {
@@ -509,7 +510,7 @@ var piGPSStreamServer = net.createServer(function(socket) {
   socket.setEncoding('utf8');
   socket.nameSet = false;
   socket.name = '';
-  socket.on('error', function onError(error) { 
+  socket.on('error', function onError(error) {
     log('Pi GPS stream socket error: ' + error);
     socket.destroy();
   });
@@ -541,8 +542,8 @@ var piGPSStreamServer = net.createServer(function(socket) {
       }
     }
   });
-  socket.on('close', function onClose() { 
-    log('GPS socket closed: ' + socket.name); 
+  socket.on('close', function onClose() {
+    log('GPS socket closed: ' + socket.name);
     socket.destroy();
   });
 });
@@ -568,8 +569,8 @@ function setGPS(device, loc) {
  * photo stream server
  */
 var piPhotoStreamServer = net.createServer(function(socket) {
-  socket.on('error', function onError(error) { 
-    log('Pi photo stream socket error: ' + error); 
+  socket.on('error', function onError(error) {
+    log('Pi photo stream socket error: ' + error);
     socket.destroy();
   });
   var wStream = fs.createWriteStream(photosDir + '/' + picName);
@@ -577,8 +578,8 @@ var piPhotoStreamServer = net.createServer(function(socket) {
   socket.on('data', function onData(chunk) {
     wStream.write(chunk);
   });
-  socket.on('close', function onClose() { 
-    wStream.end(); 
+  socket.on('close', function onClose() {
+    wStream.end();
     socket.destroy();
   });
 });
