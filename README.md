@@ -24,7 +24,7 @@ npm install
 make
 ```
 
-#### Initialize the [sqlite3](https://www.sqlite.org/) rock database
+#### Initialize the sqlite3 rock database
 ```
 ./init_db.js
 ```
@@ -40,6 +40,11 @@ nohup ./server.js | tee -a server.log
 nohup ./video_stream_server.js | tee -a video.log
 nohup ./dof_stream_server.js | tee -a dof.log
 ```
+
+## Debugging
+
+Most problems can be solved by restarting the offending server. Don't forget to `cat` the logs to see wassup!
+
 ## API Endpoints
 
 ####`/stats`
