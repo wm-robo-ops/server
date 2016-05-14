@@ -4,10 +4,42 @@ Backend that powers the [dashboard](http://wm-robo-ops.github.io/dashboard/)
 
 ## Dependencies
 
-- [Node.js](https://nodejs.org/en/)
+- [Node.js](https://nodejs.org/en/) version `4` or `5` (node-sqlite does not support v6 yet)
 - [sqlite3](https://www.sqlite.org/index.html)
-- [node-sqlite3](https://github.com/mapbox/node-sqlite3)
 
+## Setup and Running
+
+#### Installation
+```
+# sqlite3
+sudo apt-get install sqlite3
+
+# node.js
+curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# robo ops server
+git clone https://github.com/wm-robo-ops/server.git && cd server
+npm install
+make
+```
+
+#### Initialize the [sqlite3](https://www.sqlite.org/) rock database
+```
+./init_db.js
+```
+you may also have to run the following after the database is created:
+```
+chown 664 robo-ops.db
+```
+
+#### Start the servers with logging
+```
+ROBO_OPS_PASSWORD="<THE_PASSWORD>" nohup ./password_server.js | tee -a password.log
+nohup ./server.js | tee -a server.log
+nohup ./video_stream_server.js | tee -a video.log
+nohup ./dof_stream_server.js | tee -a dof.log
+```
 ## API Endpoints
 
 ####`/stats`
@@ -139,22 +171,6 @@ some video streaming socket
 ```
 
 
-## Running Locally
-
-#### Installation
-```
-git clone https://github.com/wm-robo-ops/server.git && cd server
-npm install
-make
-```
-
-#### Start the servers
-```
-./server.js
-./password_server.js
-ROBO_OPS_PASSWORD="<THE_PASSWORD>"./video_stream_server.js
-./dof_stream_server.js
-```
 
 ## Ports
 
