@@ -2,6 +2,7 @@
 var fs = require('fs');
 var path = require('path');
 var express = require('express');
+var compression = require('compression');
 var net = require('net');
 var cors = require('cors');
 var bodyParser = require('body-parser');
@@ -11,8 +12,11 @@ var devices = require('./devices');
 var log = require('./utils').log;
 
 var app = express();
+
+// middleware
 app.use(cors());
 app.use(bodyParser.json());
+app.use(compression())
 
 var picName;
 
@@ -447,6 +451,7 @@ var commands = {
 
 var piCommandServer = new PiCommandServer(9000);
 
+
 function PiCommandServer(port) {
   this.sockets = {};
   this.port = port;
@@ -485,6 +490,7 @@ function PiCommandServer(port) {
     log('PI - command server port: ' + that.port);
   });
 }
+
 PiCommandServer.prototype.sendCommand = function(command, device) {
   if (!(device in this.sockets)) {
     log(device + ' not connected');

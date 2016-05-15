@@ -16,7 +16,7 @@ var pid;
 
 function createClient(id, name) {
   var client = new net.Socket();
-  client.connect(9000, 'ec2-54-173-230-101.compute-1.amazonaws.com', function() {
+  client.connect(9000, 'localhost'/*'ec2-54-173-230-101.compute-1.amazonaws.com'*/, function() {
     client.write('192.168.1.' + id + '~');
     client.on('data', function(data) {
       console.log(name + ':', data.toString());
